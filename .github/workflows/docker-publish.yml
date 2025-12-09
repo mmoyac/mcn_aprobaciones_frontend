@@ -58,6 +58,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create directories on VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "📁 Creando directorios en VPS..."
+            mkdir -p /root/docker/mcn-frontend
+            mkdir -p /root/docker/mcn-frontend/nginx/conf.d
+            mkdir -p /root/docker/nginx-proxy/conf.d
+
       - name: Copy files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -79,9 +92,6 @@ jobs:
           script: |
             echo "🚀 Iniciando despliegue del frontend en VPS..."
             
-            # Crear directorios necesarios
-            mkdir -p /root/docker/mcn-frontend
-            mkdir -p /root/docker/nginx-proxy/conf.d
             cd /root/docker/mcn-frontend
             
             # Renombrar archivos

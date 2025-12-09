@@ -1,0 +1,146 @@
+name: Build and Push to Docker Hub
+
+on:
+  workflow_dispatch:  # Permite ejecución manual desde GitHub
+  push:
+    tags:
+      - 'v*'  # Solo en tags de versión (v1.0.0, v1.0.1, etc.)
+
+env:
+  DOCKER_IMAGE: mmoyac/mcn_aprobaciones_frontend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+
+      - name: Image digest
+        run: echo ${{ steps.meta.outputs.digest }}
+
+  deploy-to-vps:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "docker-compose.prod.yml,nginx"
+          target: "/root/docker/mcn-frontend/"
+          strip_components: 0
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "🚀 Iniciando despliegue del frontend en VPS..."
+            
+            # Crear directorios necesarios
+            mkdir -p /root/docker/mcn-frontend
+            mkdir -p /root/docker/nginx-proxy/conf.d
+            cd /root/docker/mcn-frontend
+            
+            # Renombrar archivos
+            mv docker-compose.prod.yml docker-compose.yml 2>/dev/null || true
+            
+            # Copiar configuración de Nginx al proxy centralizado
+            echo "📋 Copiando configuración de Nginx..."
+            cp nginx/conf.d/aprobaciones.lexastech.cl.conf /root/docker/nginx-proxy/conf.d/
+            
+            # Descargar última imagen
+            echo "📦 Descargando imagen desde Docker Hub..."
+            docker-compose pull
+            
+            # Detener y eliminar contenedor anterior
+            echo "🛑 Deteniendo servicios anteriores..."
+            docker-compose down
+            
+            # Iniciar servicios con docker-compose (forzar recreación)
+            echo "▶️ Iniciando servicios con docker-compose..."
+            docker-compose up -d --force-recreate
+            
+            # Recargar Nginx proxy
+            echo "🔄 Recargando Nginx proxy..."
+            docker exec nginx-proxy nginx -t && docker exec nginx-proxy nginx -s reload
+            
+            # Esperar a que el contenedor esté listo
+            echo "⏳ Esperando que el servicio esté listo..."
+            sleep 10
+            
+            # Verificar que el contenedor está corriendo
+            if docker ps | grep -q mcn_frontend; then
+              echo "✅ Contenedor iniciado correctamente"
+              docker ps | grep mcn_frontend
+            else
+              echo "❌ Error: El contenedor no está corriendo"
+              docker-compose logs frontend
+              exit 1
+            fi
+            
+            # Verificar health check
+            echo "🏥 Verificando health check..."
+            if curl -f http://localhost:3000/; then
+              echo "✅ Servicio respondiendo correctamente"
+            else
+              echo "⚠️ Advertencia: Health check falló, pero el contenedor está corriendo"
+            fi
+            
+            # Obtener certificado SSL si no existe
+            echo "🔐 Verificando certificado SSL..."
+            if [ ! -d "/etc/letsencrypt/live/aprobaciones.lexastech.cl" ]; then
+              echo "📜 Obteniendo certificado SSL..."
+              docker exec nginx-proxy certbot --nginx -d aprobaciones.lexastech.cl --non-interactive --agree-tos -m mmoyac@lexastech.cl
+            else
+              echo "✅ Certificado SSL ya existe"
+            fi
+            
+            # Limpiar imágenes antiguas
+            echo "🧹 Limpiando imágenes antiguas..."
+            docker image prune -f
+            
+            echo "🎉 Despliegue completado exitosamente!"
+            echo "🌐 La aplicación está disponible en: https://aprobaciones.lexastech.cl"

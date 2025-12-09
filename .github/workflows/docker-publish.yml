@@ -103,15 +103,15 @@ jobs:
             
             # Descargar última imagen
             echo "📦 Descargando imagen desde Docker Hub..."
-            docker-compose pull
+            docker compose pull
             
             # Detener y eliminar contenedor anterior
             echo "🛑 Deteniendo servicios anteriores..."
-            docker-compose down
+            docker compose down
             
-            # Iniciar servicios con docker-compose (forzar recreación)
-            echo "▶️ Iniciando servicios con docker-compose..."
-            docker-compose up -d --force-recreate
+            # Iniciar servicios con docker compose v2 (forzar recreación)
+            echo "▶️ Iniciando servicios con docker compose..."
+            docker compose up -d --force-recreate
             
             # Recargar Nginx proxy
             echo "🔄 Recargando Nginx proxy..."
@@ -127,7 +127,7 @@ jobs:
               docker ps | grep mcn_frontend
             else
               echo "❌ Error: El contenedor no está corriendo"
-              docker-compose logs frontend
+              docker compose logs frontend
               exit 1
             fi
             

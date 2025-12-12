@@ -23,12 +23,15 @@ export interface PresupuestoDetalle {
   pre_est: string;
   pre_fec: string;
   pre_rut: number;
+  cliente_nombre: string;
   pre_VenCod: number;
   Pre_Neto: number;
   Pre_vbLib: number;
   pre_vbgg: number;
   pre_gl1: string;
   pre_fecAdj: string;
+  sol_nro: number;
+  pre_ref: string;
   pre_VbLibUsu?: string;
   Pre_VBLibDt?: string;
   pre_vbggUsu?: string;
@@ -50,6 +53,40 @@ export interface PresupuestoAprobadoResponse {
   pre_vbggUsu: string;
   pre_vbggDt: string;
   pre_vbggTime: string;
+}
+
+// Tipos para Órdenes de Compra
+export interface OrdenCompraIndicadores {
+  pendientes_count: number;
+  aprobados_hoy_count: number;
+}
+
+export interface OrdenCompraDetalle {
+  Loc_cod: number;
+  ocp_nro: number;
+  ocp_fec: string;
+  ocp_fee: string;
+  pro_rut: number;
+  proveedor_nombre: string;
+  ocp_pdt: string;
+  ocp_net: number;
+  ocp_iva: number;
+  ocp_ila: number;
+  monto_total: number;
+  ocp_A1_Usu?: string;
+  ocp_A1_Dt?: string;
+  ocp_A1_Hr?: string;
+}
+
+export interface OrdenCompraAprobar {
+  Loc_cod: number;
+  ocp_nro: number;
+}
+
+export interface OrdenCompraAprobadoResponse {
+  message: string;
+  ocp_nro: number;
+  new_status: string;
 }
 
 // Tipos para usuarios

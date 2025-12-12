@@ -30,7 +30,7 @@ export const presupuestosApi = {
     if (usuario) params.usuario = usuario;
     if (fecha_desde) params.fecha_desde = fecha_desde;
     if (fecha_hasta) params.fecha_hasta = fecha_hasta;
-    
+
     const { data } = await apiClient.get<PresupuestoDetalle[]>('/presupuestos/aprobados', {
       params,
     });
@@ -40,6 +40,14 @@ export const presupuestosApi = {
   aprobar: async (presupuesto: PresupuestoAprobar): Promise<PresupuestoAprobadoResponse> => {
     const { data } = await apiClient.post<PresupuestoAprobadoResponse>(
       '/presupuestos/aprobar',
+      presupuesto
+    );
+    return data;
+  },
+
+  desaprobar: async (presupuesto: PresupuestoAprobar): Promise<PresupuestoAprobadoResponse> => {
+    const { data } = await apiClient.post<PresupuestoAprobadoResponse>(
+      '/presupuestos/desaprobar',
       presupuesto
     );
     return data;

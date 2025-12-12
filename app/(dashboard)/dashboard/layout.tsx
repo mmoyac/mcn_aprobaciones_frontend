@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api/auth';
-import { LogOut, Home, FileText } from 'lucide-react';
+import { LogOut, Home, FileText, ShoppingCart } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -46,6 +46,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 >
                   <FileText className="w-4 h-4" />
                   <span>Presupuestos</span>
+                </a>
+                <a
+                  href="/dashboard/ordenes-compra"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Órdenes de Compra</span>
                 </a>
               </nav>
             </div>

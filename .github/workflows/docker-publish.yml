@@ -44,8 +44,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
-          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+          no-cache: true
 
       - name: Image digest
         run: echo ${{ steps.meta.outputs.digest }}
@@ -101,6 +100,10 @@ jobs:
             # Copiar configuración de Nginx al proxy centralizado
             echo "📋 Copiando configuración de Nginx..."
             cp nginx/conf.d/aprobaciones.lexastech.cl.conf /root/docker/nginx-proxy/conf.d/
+            
+            # Limpiar imágenes antiguas del frontend para forzar descarga
+            echo "🧹 Limpiando imágenes antiguas del frontend..."
+            docker rmi mmoyac/mcn_aprobaciones_frontend:latest 2>/dev/null || true
             
             # Descargar última imagen
             echo "📦 Descargando imagen desde Docker Hub..."

@@ -7,6 +7,7 @@ import { presupuestosApi } from '@/lib/api/presupuestos';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X } from 'lucide-react';
+import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobados';
 
@@ -619,7 +620,7 @@ export default function PresupuestosPage() {
             </div>
 
             {/* Contenido del modal */}
-            <div className="flex-1 p-4 overflow-hidden">
+            <div className="flex-1 overflow-hidden">
               {pdfModal.isLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="flex items-center gap-3 text-white">
@@ -628,10 +629,11 @@ export default function PresupuestosPage() {
                   </div>
                 </div>
               ) : pdfModal.pdfUrl ? (
-                <iframe
-                  src={pdfModal.pdfUrl}
-                  className="w-full h-full rounded border border-slate-600"
+                <PDFViewer
+                  pdfUrl={pdfModal.pdfUrl}
                   title={`Presupuesto ${pdfModal.numeroPresupuesto}`}
+                  numeroDocumento={pdfModal.numeroPresupuesto || 0}
+                  onDownload={handleDownloadPDF}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">

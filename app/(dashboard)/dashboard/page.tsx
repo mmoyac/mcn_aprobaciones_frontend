@@ -65,7 +65,7 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">Dashboard</h2>
+        <h2 className="text-3xl font-bold text-white mb-2">Tablero</h2>
         <p className="text-slate-400">Vista general del sistema de aprobaciones</p>
       </div>
 
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <h3 className="text-sm font-medium text-slate-400 mb-1">Pendientes</h3>
-              <p className="text-3xl font-bold text-purple-400">{indicadoresOrdenes?.pendientes_count || 0}</p>
+              <p className="text-3xl font-bold text-purple-400">{indicadoresOrdenes?.pendientes || 0}</p>
             </div>
 
             {/* Aprobados */}

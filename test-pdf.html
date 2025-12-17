@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test PDF</title>
+</head>
+<body>
+    <h1>Test PDF Download</h1>
+    <button onclick="testPDF()">Test PDF 1133</button>
+    <div id="result"></div>
+
+    <script>
+        async function testPDF() {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = 'Testing...';
+                
+                const response = await fetch('http://localhost:8000/api/v1/documentos-pdf/get?tipo=1&numero=1133', {
+                    method: 'GET',
+                    headers: {
+                        'x-api-key': 'supersecreta123',
+                        'Accept': 'application/pdf'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    resultDiv.innerHTML = `Success! PDF size: ${blob.size} bytes`;
+                    
+                    // Create download
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'test-presupuesto-1133.pdf';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    resultDiv.innerHTML = `Error: ${response.status} - ${response.statusText}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

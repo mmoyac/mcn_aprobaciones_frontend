@@ -12,17 +12,27 @@ export const ordenesApi = {
         return data;
     },
 
-    getPendientes: async (): Promise<OrdenCompraDetalle[]> => {
-        const { data } = await apiClient.get<OrdenCompraDetalle[]>('/ordenes-compra/pendientes');
+    getPendientes: async (skip = 0, limit = 100): Promise<OrdenCompraDetalle[]> => {
+        const { data } = await apiClient.get<OrdenCompraDetalle[]>('/ordenes-compra/pendientes', {
+            params: { skip, limit }
+        });
         return data;
     },
 
-    getAprobados: async (usuario: string, fechaDesde: string, fechaHasta: string): Promise<OrdenCompraDetalle[]> => {
-        const { data } = await apiClient.get<OrdenCompraDetalle[]>('/ordenes-compra/aprobados', {
-            params: {
-                fecha_desde: fechaDesde,
-                fecha_hasta: fechaHasta
-            },
+    getAprobadas: async (
+        usuario?: string, 
+        fechaDesde?: string, 
+        fechaHasta?: string,
+        skip = 0,
+        limit = 100
+    ): Promise<OrdenCompraDetalle[]> => {
+        const params: any = { skip, limit };
+        if (usuario) params.usuario = usuario;
+        if (fechaDesde) params.fecha_desde = fechaDesde;
+        if (fechaHasta) params.fecha_hasta = fechaHasta;
+
+        const { data } = await apiClient.get<OrdenCompraDetalle[]>('/ordenes-compra/aprobadas', {
+            params
         });
         return data;
     },

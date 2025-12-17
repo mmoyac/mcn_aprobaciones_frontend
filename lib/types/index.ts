@@ -38,6 +38,7 @@ export interface PresupuestoDetalle {
   pre_vbggDt?: string;
   pre_trnFec: string;
   pre_trnusu: string;
+  tienepdf?: number; // 1 = tiene PDF, 0 = no tiene PDF (solo en pendientes)
 }
 
 export interface PresupuestoAprobar {
@@ -57,8 +58,9 @@ export interface PresupuestoAprobadoResponse {
 
 // Tipos para Órdenes de Compra
 export interface OrdenCompraIndicadores {
-  pendientes_count: number;
-  aprobados_hoy_count: number;
+  total: number;
+  pendientes: number;
+  aprobadas: number;
 }
 
 export interface OrdenCompraDetalle {
@@ -73,9 +75,10 @@ export interface OrdenCompraDetalle {
   ocp_iva: number;
   ocp_ila: number;
   monto_total: number;
-  ocp_A1_Usu?: string;
-  ocp_A1_Dt?: string;
-  ocp_A1_Hr?: string;
+  tienepdf?: number;
+  ocp_A2_Usu?: string;
+  ocp_A2_Dt?: string;
+  ocp_A2_Hr?: string;
 }
 
 export interface OrdenCompraAprobar {

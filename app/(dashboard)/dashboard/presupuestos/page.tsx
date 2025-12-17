@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X } from 'lucide-react';
 
 type Tab = 'pendientes' | 'aprobados';
 
@@ -19,8 +19,97 @@ export default function PresupuestosPage() {
     pre_nro: number;
   } | null>(null);
 
+  const [pdfModal, setPdfModal] = useState<{
+    isOpen: boolean;
+    numeroPresupuesto: number | null;
+    pdfUrl: string | null;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    numeroPresupuesto: null,
+    pdfUrl: null,
+    isLoading: false,
+  });
+
   const queryClient = useQueryClient();
   const usuario = authApi.getUser();
+
+  // Prevenir scroll del body cuando hay modal abierto
+  useEffect(() => {
+    if (selectedPresupuesto || pdfModal.isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = '15px'; // Compensar por scrollbar
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    // Cleanup al desmontar el componente
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [selectedPresupuesto, pdfModal.isOpen]);
+
+  // Función para abrir PDF
+  const handleViewPDF = async (numeroPresupuesto: number) => {
+    setPdfModal(prev => ({
+      ...prev,
+      isOpen: true,
+      numeroPresupuesto,
+      isLoading: true,
+      pdfUrl: null,
+    }));
+
+    try {
+      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      setPdfModal(prev => ({
+        ...prev,
+        pdfUrl,
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      console.error('Error loading PDF:', error);
+      alert(`Error al cargar PDF: ${error.message}`);
+      setPdfModal(prev => ({
+        ...prev,
+        isLoading: false,
+      }));
+    }
+  };
+
+  // Función para descargar PDF
+  const handleDownloadPDF = async (numeroPresupuesto: number) => {
+    try {
+      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto);
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `presupuesto-${numeroPresupuesto}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('Error downloading PDF:', error);
+      alert(`Error al descargar PDF: ${error.message}`);
+    }
+  };
+
+  // Función para cerrar modal
+  const closePdfModal = () => {
+    if (pdfModal.pdfUrl) {
+      URL.revokeObjectURL(pdfModal.pdfUrl);
+    }
+    setPdfModal({
+      isOpen: false,
+      numeroPresupuesto: null,
+      pdfUrl: null,
+      isLoading: false,
+    });
+  };
 
   // Efecto para sincronizar el tab con la URL
   useEffect(() => {
@@ -28,6 +117,15 @@ export default function PresupuestosPage() {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
+
+  // Cleanup PDF URLs cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      if (pdfModal.pdfUrl) {
+        URL.revokeObjectURL(pdfModal.pdfUrl);
+      }
+    };
+  }, [pdfModal.pdfUrl]);
 
   // Query para presupuestos pendientes
   const { data: pendientes, isLoading: isLoadingPendientes } = useQuery({
@@ -42,9 +140,11 @@ export default function PresupuestosPage() {
     queryFn: () => {
       if (!usuario?.usuario) return Promise.resolve([]);
 
-      // Obtener fecha actual para mostrar aprobaciones del día del usuario autenticado
-      const hoy = new Date().toISOString().split('T')[0];
-      return presupuestosApi.getAprobados(usuario.usuario.toLowerCase(), hoy, hoy);
+      // Mostrar solo las aprobaciones de HOY del usuario autenticado
+      const hoy = new Date();
+      const fechaHoy = hoy.toISOString().split('T')[0];
+      
+      return presupuestosApi.getAprobados(usuario.usuario.toLowerCase(), fechaHoy, fechaHoy);
     },
     enabled: activeTab === 'aprobados' && !!usuario?.usuario,
   });
@@ -123,7 +223,7 @@ export default function PresupuestosPage() {
             : 'text-slate-400 hover:text-slate-300'
             }`}
         >
-          Aprobados
+          Aprobados Hoy
         </button>
       </div>
 
@@ -184,6 +284,8 @@ export default function PresupuestosPage() {
                     <p className="truncate">{presupuesto.pre_ref || '-'}</p>
                   </div>
 
+
+
                   {activeTab === 'aprobados' && (
                     <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 pt-3 border-t border-slate-700/50 bg-slate-700/10 -mx-2 px-2 pb-1 rounded-b-lg">
                       <div>
@@ -198,6 +300,34 @@ export default function PresupuestosPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* PDF Buttons (para ambas pestañas) */}
+                  <div>
+                    <span className="block text-xs text-slate-500 mb-1">PDF</span>
+                    {presupuesto.tienepdf === 1 ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleViewPDF(presupuesto.pre_nro)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Ver
+                        </button>
+                        <button
+                          onClick={() => handleDownloadPDF(presupuesto.pre_nro)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
+                        >
+                          <Download className="w-3 h-3" />
+                          Descargar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1 text-red-400">
+                        <FileX className="w-3 h-3" />
+                        <span className="text-xs">No disponible</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Acción Card */}
@@ -252,6 +382,9 @@ export default function PresupuestosPage() {
                     </th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300">
                       Precio Neto
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
+                      PDF
                     </th>
                     {activeTab === 'pendientes' && (
                       <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
@@ -311,6 +444,32 @@ export default function PresupuestosPage() {
                       <td className="px-6 py-4 text-right text-white font-semibold whitespace-nowrap">
                         {formatCurrency(presupuesto.Pre_Neto)}
                       </td>
+                      <td className="px-6 py-4 text-center">
+                        {presupuesto.tienepdf === 1 ? (
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={() => handleViewPDF(presupuesto.pre_nro)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors cursor-pointer"
+                              title="Ver PDF"
+                            >
+                              <Eye className="w-3 h-3" />
+                              Ver
+                            </button>
+                            <button
+                              onClick={() => handleDownloadPDF(presupuesto.pre_nro)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors cursor-pointer"
+                              title="Descargar PDF"
+                            >
+                              <Download className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400" title="Sin PDF">
+                            <FileX className="w-3 h-3" />
+                            Sin PDF
+                          </div>
+                        )}
+                      </td>
                       {activeTab === 'pendientes' && (
                         <td className="px-6 py-4 text-center">
                           <button
@@ -360,19 +519,31 @@ export default function PresupuestosPage() {
       {!isLoading && (!presupuestos || presupuestos.length === 0) && (
         <div className="text-center py-12 bg-slate-800 rounded-lg">
           <p className="text-slate-400 text-lg">
-            No hay presupuestos {activeTab === 'pendientes' ? 'pendientes' : 'aprobados'}
+            No hay presupuestos {activeTab === 'pendientes' ? 'pendientes' : 'aprobados hoy'}
           </p>
         </div>
       )}
 
       {/* Modal de confirmación */}
       {selectedPresupuesto && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-lg p-6 max-w-md w-full border border-slate-700 shadow-xl">
-            <h3 className="text-xl font-bold text-white mb-4">
+        <div 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={(e) => {
+            // Cerrar modal si se hace click en el backdrop
+            if (e.target === e.currentTarget) {
+              setSelectedPresupuesto(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-slate-800 rounded-lg p-4 md:p-6 max-w-sm md:max-w-md w-full mx-2 border border-slate-700 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg md:text-xl font-bold text-white mb-4 text-center">
               {modalAction === 'aprobar' ? 'Confirmar Aprobación' : 'Confirmar Desaprobación'}
             </h3>
-            <p className="text-slate-300 mb-6">
+            <p className="text-slate-300 mb-6 text-center text-sm md:text-base">
               ¿Está seguro que desea {modalAction === 'aprobar' ? 'aprobar' : 'desaprobar'} el presupuesto N°{' '}
               <span className="font-bold text-teal-400">
                 {selectedPresupuesto.pre_nro}
@@ -386,20 +557,20 @@ export default function PresupuestosPage() {
                 </p>
               </div>
             )}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setSelectedPresupuesto(null)}
                 disabled={isPending}
-                className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors disabled:opacity-50 font-medium"
+                className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 active:bg-slate-600 text-white rounded-lg transition-colors disabled:opacity-50 font-medium text-center touch-manipulation"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmAction}
                 disabled={isPending}
-                className={`flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2 ${modalAction === 'aprobar'
-                  ? 'bg-teal-600 hover:bg-teal-700'
-                  : 'bg-red-600 hover:bg-red-700'
+                className={`flex-1 px-4 py-3 text-white rounded-lg transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2 touch-manipulation ${modalAction === 'aprobar'
+                  ? 'bg-teal-600 hover:bg-teal-700 active:bg-teal-700'
+                  : 'bg-red-600 hover:bg-red-700 active:bg-red-700'
                   }`}
               >
                 {isPending ? (
@@ -414,6 +585,65 @@ export default function PresupuestosPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de PDF */}
+      {pdfModal.isOpen && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9998] p-2 md:p-4">
+          <div className="bg-slate-800 rounded-lg w-full max-w-7xl h-[95vh] md:h-[90vh] border border-slate-700 shadow-xl flex flex-col">
+            {/* Header del modal */}
+            <div className="flex items-center justify-between p-4 border-b border-slate-700">
+              <h3 className="text-lg md:text-xl font-bold text-white">
+                Presupuesto N° {pdfModal.numeroPresupuesto}
+              </h3>
+              <div className="flex items-center gap-2">
+                {pdfModal.pdfUrl && (
+                  <button
+                    onClick={() => pdfModal.numeroPresupuesto && handleDownloadPDF(pdfModal.numeroPresupuesto)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">Descargar</span>
+                  </button>
+                )}
+                <button
+                  onClick={closePdfModal}
+                  className="flex items-center justify-center w-8 h-8 bg-slate-700 hover:bg-slate-600 text-white rounded-md transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido del modal */}
+            <div className="flex-1 p-4 overflow-hidden">
+              {pdfModal.isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center gap-3 text-white">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Cargando PDF...</span>
+                  </div>
+                </div>
+              ) : pdfModal.pdfUrl ? (
+                <iframe
+                  src={pdfModal.pdfUrl}
+                  className="w-full h-full rounded border border-slate-600"
+                  title={`Presupuesto ${pdfModal.numeroPresupuesto}`}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center text-red-400">
+                    <FileX className="w-12 h-12 mx-auto mb-3" />
+                    <p>Error al cargar el PDF</p>
+                    <p className="text-sm text-slate-400 mt-1">
+                      No se pudo mostrar el documento
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

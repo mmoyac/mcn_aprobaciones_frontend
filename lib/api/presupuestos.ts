@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiClient } from './client';
+import { getPdfApiUrl } from '../utils';
 import {
   PresupuestoIndicadores,
   PresupuestoDetalle,
@@ -81,7 +82,7 @@ export const presupuestosApi = {
       
       // Fallback: conexión directa al backend
       try {
-        const directUrl = 'http://localhost:8000/api/v1/documentos-pdf/get';
+        const directUrl = getPdfApiUrl('documentos-pdf/get');
         console.log('Trying direct connection to:', directUrl);
         
         const response = await axios.get(directUrl, {

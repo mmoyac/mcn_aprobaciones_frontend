@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Hacer la petición al backend para órdenes de compra (tipo=2)
-    const backendUrl = `http://localhost:8000/api/v1/documentos-pdf/get?tipo=2&numero=${numero}`;
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+    const backendUrl = `${API_BASE}/documentos-pdf/get?tipo=2&numero=${numero}`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

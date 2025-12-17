@@ -46,4 +46,26 @@ export const ordenesApi = {
         const { data } = await apiClient.post<OrdenCompraAprobadoResponse>('/ordenes-compra/desaprobar', payload);
         return data;
     },
+
+    verPdf: async (numeroOrden: number): Promise<Blob> => {
+        try {
+            // Intentar usando el proxy interno de Next.js
+            const proxyResponse = await fetch(`/api/ordenes-pdf/get?numero=${numeroOrden}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/pdf' }
+            });
+
+            if (proxyResponse.ok) {
+                return await proxyResponse.blob();
+            }
+
+            // Si el proxy falla, mostrar error específico
+            const errorData = await proxyResponse.json().catch(() => ({}));
+            throw new Error(`Error al obtener PDF: ${errorData.error || 'Error desconocido'}`);
+
+        } catch (error) {
+            console.error('Error in verPdf:', error);
+            throw new Error(`Error de conexión: ${error instanceof Error ? error.message : 'No se pudo conectar con el servidor'}`);
+        }
+    },
 };

@@ -12,6 +12,21 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+/**
+ * Obtiene la URL base de la API desde la variable de entorno
+ */
+export function getApiBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+}
+
+/**
+ * Construye una URL completa para el endpoint de PDFs
+ */
+export function getPdfApiUrl(endpoint: string = ''): string {
+  const baseUrl = getApiBaseUrl();
+  return endpoint ? `${baseUrl}/${endpoint}` : baseUrl;
+}
+
 export function formatDate(date: string): string {
   // Crear fecha como fecha local (no UTC) para evitar problemas de zona horaria
   const [year, month, day] = date.split('-').map(num => parseInt(num, 10));

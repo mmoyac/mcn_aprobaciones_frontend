@@ -43,7 +43,7 @@ export default function DashboardPage() {
     queryFn: () => {
       if (!user?.usuario) return Promise.resolve([]);
       const hoy = new Date().toISOString().split('T')[0];
-      return ordenesApi.getAprobados(user.usuario.toLowerCase(), hoy, hoy);
+      return ordenesApi.getAprobadas(user.usuario.toLowerCase(), hoy, hoy);
     },
     enabled: !!user?.usuario,
   });

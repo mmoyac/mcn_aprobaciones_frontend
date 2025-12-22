@@ -14,9 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aprobaciones",
-  description: "Sistema de gestión de aprobaciones de presupuestos",
+  title: "GONTEC Aprobaciones",
+  description: "Panel de aprobaciones GONTEC - Presupuestos y Órdenes de Compra",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  manifest: "/manifest.json",
+  themeColor: "#5ec8f2",
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "GONTEC Aprobaciones",
+  },
 };
 
 export default function RootLayout({

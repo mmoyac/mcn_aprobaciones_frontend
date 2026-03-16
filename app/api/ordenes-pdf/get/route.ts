@@ -4,14 +4,15 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const numero = searchParams.get('numero');
-    
-    if (!numero) {
-      return Response.json({ error: 'Falta parámetro numero' }, { status: 400 });
+    const locCod = searchParams.get('loc_cod');
+
+    if (!numero || !locCod) {
+      return Response.json({ error: 'Faltan parámetros numero y loc_cod' }, { status: 400 });
     }
 
     // Hacer la petición al backend para órdenes de compra (tipo=2)
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8050/api/v1';
-    const backendUrl = `${API_BASE}/documentos-pdf/get?tipo=2&numero=${numero}`;
+    const backendUrl = `${API_BASE}/documentos-pdf/get-cliente?loc_cod=${locCod}&tipo=2&numero=${numero}`;
     const tenantDomain = request.headers.get('host')?.split(':')[0] || '';
 
     const response = await fetch(backendUrl, {

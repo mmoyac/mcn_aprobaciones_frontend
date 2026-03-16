@@ -5,14 +5,15 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const tipo = searchParams.get('tipo');
     const numero = searchParams.get('numero');
+    const locCod = searchParams.get('loc_cod');
 
-    if (!tipo || !numero) {
-      return Response.json({ error: 'Faltan parámetros tipo y numero' }, { status: 400 });
+    if (!tipo || !numero || !locCod) {
+      return Response.json({ error: 'Faltan parámetros tipo, numero y loc_cod' }, { status: 400 });
     }
 
     // URL interna al backend (server-side)
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8050/api/v1';
-    const backendUrl = `${API_BASE}/documentos-pdf/get?tipo=${tipo}&numero=${numero}`;
+    const backendUrl = `${API_BASE}/documentos-pdf/get-cliente?loc_cod=${locCod}&tipo=${tipo}&numero=${numero}`;
 
     // Tenant domain: viene del host del request del cliente
     const tenantDomain = request.headers.get('host')?.split(':')[0] || '';

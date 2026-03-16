@@ -38,7 +38,7 @@ export interface PresupuestoDetalle {
   pre_vbggDt?: string;
   pre_trnFec: string;
   pre_trnusu: string;
-  tienepdf?: number; // 1 = tiene PDF, 0 = no tiene PDF (solo en pendientes)
+  tienepdf?: number; // 0 = no existe, 1 = tiene PDF, 2 = existe sin contenido
 }
 
 export interface PresupuestoAprobar {

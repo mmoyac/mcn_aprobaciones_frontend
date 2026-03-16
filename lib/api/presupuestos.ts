@@ -55,12 +55,12 @@ export const presupuestosApi = {
     return data;
   },
 
-  getPDF: async (numeroPresupuesto: number): Promise<Blob> => {
+  getPDF: async (numeroPresupuesto: number, locCod: number): Promise<Blob> => {
     try {
       // Intentar primero con proxy interno de Next.js para evitar problemas de CORS
       console.log('Fetching PDF via Next.js proxy for presupuesto:', numeroPresupuesto);
       
-      const proxyResponse = await fetch(`/api/pdf?tipo=1&numero=${numeroPresupuesto}`, {
+      const proxyResponse = await fetch(`/api/pdf?tipo=1&numero=${numeroPresupuesto}&loc_cod=${locCod}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/pdf',
@@ -82,11 +82,11 @@ export const presupuestosApi = {
       
       // Fallback: conexión directa al backend
       try {
-        const directUrl = getPdfApiUrl('documentos-pdf/get');
+        const directUrl = getPdfApiUrl('documentos-pdf/get-cliente');
         console.log('Trying direct connection to:', directUrl);
         
         const response = await axios.get(directUrl, {
-          params: { tipo: 1, numero: numeroPresupuesto },
+          params: { loc_cod: locCod, tipo: 1, numero: numeroPresupuesto },
           headers: {
             'x-api-key': 'supersecreta123',
             'Accept': 'application/pdf',

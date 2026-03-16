@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ordenesApi } from '@/lib/api/ordenes';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2 } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobadas';
@@ -23,11 +23,13 @@ export default function OrdenesCompraPage() {
   const [pdfModal, setPdfModal] = useState<{
     isOpen: boolean;
     numeroOrden: number | null;
+    locCod: number | null;
     pdfUrl: string | null;
     isLoading: boolean;
   }>({
     isOpen: false,
     numeroOrden: null,
+    locCod: null,
     pdfUrl: null,
     isLoading: false,
   });
@@ -53,18 +55,19 @@ export default function OrdenesCompraPage() {
   }, [selectedOrden, pdfModal.isOpen]);
 
   // Función para abrir PDF
-  const handleViewPDF = async (numeroOrden: number) => {
+  const handleViewPDF = async (numeroOrden: number, locCod: number) => {
     setPdfModal(prev => ({
       ...prev,
       isOpen: true,
       numeroOrden,
+      locCod,
       isLoading: true,
       pdfUrl: null,
     }));
 
     try {
       // Usar el endpoint proxy para órdenes de compra
-      const response = await fetch(`/api/ordenes-pdf/get?numero=${numeroOrden}`);
+      const response = await fetch(`/api/ordenes-pdf/get?numero=${numeroOrden}&loc_cod=${locCod}`);
       
       if (!response.ok) {
         throw new Error('Error al obtener PDF');
@@ -89,9 +92,9 @@ export default function OrdenesCompraPage() {
   };
 
   // Función para descargar PDF
-  const handleDownloadPDF = async (numeroOrden: number) => {
+  const handleDownloadPDF = async (numeroOrden: number, locCod: number) => {
     try {
-      const response = await fetch(`/api/ordenes-pdf/get?numero=${numeroOrden}`);
+      const response = await fetch(`/api/ordenes-pdf/get?numero=${numeroOrden}&loc_cod=${locCod}`);
       
       if (!response.ok) {
         throw new Error('Error al obtener PDF');
@@ -109,6 +112,30 @@ export default function OrdenesCompraPage() {
     } catch (error: any) {
       console.error('Error downloading PDF:', error);
       alert(`Error al descargar PDF: ${error.message}`);
+    }
+  };
+
+  // Función para compartir PDF (Web Share API)
+  const handleSharePDF = async (numeroOrden: number, locCod: number) => {
+    try {
+      const response = await fetch(`/api/ordenes-pdf/get?numero=${numeroOrden}&loc_cod=${locCod}`);
+      if (!response.ok) throw new Error('Error al obtener PDF');
+      const pdfBlob = await response.blob();
+      const file = new File([pdfBlob], `orden-compra-${numeroOrden}.pdf`, { type: 'application/pdf' });
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Orden de Compra N° ${numeroOrden}`,
+          text: `Orden de Compra N° ${numeroOrden}`,
+        });
+      } else {
+        alert('Compartir archivos no está disponible en este navegador. Usa el botón Descargar.');
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error sharing PDF:', error);
+        alert(`Error al compartir: ${error.message}`);
+      }
     }
   };
 
@@ -141,6 +168,7 @@ export default function OrdenesCompraPage() {
     setPdfModal({
       isOpen: false,
       numeroOrden: null,
+      locCod: null,
       pdfUrl: null,
       isLoading: false,
     });
@@ -286,19 +314,31 @@ export default function OrdenesCompraPage() {
                     {orden.tienepdf === 1 ? (
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleViewPDF(orden.ocp_nro)}
+                          onClick={() => handleViewPDF(orden.ocp_nro, orden.Loc_cod)}
                           className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs"
                         >
                           <Eye className="w-3 h-3" />
                           <span className="hidden sm:inline">Ver</span>
                         </button>
                         <button
-                          onClick={() => handleDownloadPDF(orden.ocp_nro)}
+                          onClick={() => handleDownloadPDF(orden.ocp_nro, orden.Loc_cod)}
                           className="flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-xs"
                         >
                           <Download className="w-3 h-3" />
                           <span className="hidden sm:inline">PDF</span>
                         </button>
+                        <button
+                          onClick={() => handleSharePDF(orden.ocp_nro, orden.Loc_cod)}
+                          className="flex items-center gap-1 px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors text-xs"
+                        >
+                          <Share2 className="w-3 h-3" />
+                          <span className="hidden sm:inline">Compartir</span>
+                        </button>
+                      </div>
+                    ) : orden.tienepdf === 2 ? (
+                      <div className="flex items-center gap-1 text-amber-400 text-xs">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span className="hidden sm:inline">Sin contenido</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 text-slate-500 text-xs">
@@ -435,19 +475,31 @@ export default function OrdenesCompraPage() {
                         {orden.tienepdf === 1 ? (
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => handleViewPDF(orden.ocp_nro)}
+                              onClick={() => handleViewPDF(orden.ocp_nro, orden.Loc_cod)}
                               className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs"
                               title="Ver PDF"
                             >
                               <Eye className="w-3 h-3" />
                             </button>
                             <button
-                              onClick={() => handleDownloadPDF(orden.ocp_nro)}
+                              onClick={() => handleDownloadPDF(orden.ocp_nro, orden.Loc_cod)}
                               className="flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-xs"
                               title="Descargar PDF"
                             >
                               <Download className="w-3 h-3" />
                             </button>
+                            <button
+                              onClick={() => handleSharePDF(orden.ocp_nro, orden.Loc_cod)}
+                              className="flex items-center gap-1 px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors text-xs"
+                              title="Compartir PDF"
+                            >
+                              <Share2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : orden.tienepdf === 2 ? (
+                          <div className="flex items-center gap-1 text-amber-400">
+                            <AlertTriangle className="w-4 h-4" />
+                            <span className="text-xs">Sin contenido</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-slate-500">
@@ -580,7 +632,7 @@ export default function OrdenesCompraPage() {
               <div className="flex items-center gap-2">
                 {pdfModal.pdfUrl && (
                   <button
-                    onClick={() => pdfModal.numeroOrden && handleDownloadPDF(pdfModal.numeroOrden)}
+                  onClick={() => pdfModal.numeroOrden && pdfModal.locCod && handleDownloadPDF(pdfModal.numeroOrden, pdfModal.locCod)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
                   >
                     <Download className="w-4 h-4" />
@@ -610,7 +662,7 @@ export default function OrdenesCompraPage() {
                   pdfUrl={pdfModal.pdfUrl}
                   title={`Orden de Compra ${pdfModal.numeroOrden}`}
                   numeroDocumento={pdfModal.numeroOrden || 0}
-                  onDownload={handleDownloadPDF}
+                  onDownload={(num) => handleDownloadPDF(num, pdfModal.locCod ?? 0)}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">

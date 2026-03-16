@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2 } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobados';
@@ -23,11 +23,13 @@ export default function PresupuestosPage() {
   const [pdfModal, setPdfModal] = useState<{
     isOpen: boolean;
     numeroPresupuesto: number | null;
+    locCod: number | null;
     pdfUrl: string | null;
     isLoading: boolean;
   }>({
     isOpen: false,
     numeroPresupuesto: null,
+    locCod: null,
     pdfUrl: null,
     isLoading: false,
   });
@@ -53,17 +55,18 @@ export default function PresupuestosPage() {
   }, [selectedPresupuesto, pdfModal.isOpen]);
 
   // Función para abrir PDF
-  const handleViewPDF = async (numeroPresupuesto: number) => {
+  const handleViewPDF = async (numeroPresupuesto: number, locCod: number) => {
     setPdfModal(prev => ({
       ...prev,
       isOpen: true,
       numeroPresupuesto,
+      locCod,
       isLoading: true,
       pdfUrl: null,
     }));
 
     try {
-      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto);
+      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto, locCod);
       const pdfUrl = URL.createObjectURL(pdfBlob);
       
       setPdfModal(prev => ({
@@ -82,9 +85,9 @@ export default function PresupuestosPage() {
   };
 
   // Función para descargar PDF
-  const handleDownloadPDF = async (numeroPresupuesto: number) => {
+  const handleDownloadPDF = async (numeroPresupuesto: number, locCod: number) => {
     try {
-      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto);
+      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto, locCod);
       const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -99,6 +102,28 @@ export default function PresupuestosPage() {
     }
   };
 
+  // Función para compartir PDF (Web Share API)
+  const handleSharePDF = async (numeroPresupuesto: number, locCod: number) => {
+    try {
+      const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto, locCod);
+      const file = new File([pdfBlob], `presupuesto-${numeroPresupuesto}.pdf`, { type: 'application/pdf' });
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Presupuesto N° ${numeroPresupuesto}`,
+          text: `Presupuesto N° ${numeroPresupuesto}`,
+        });
+      } else {
+        alert('Compartir archivos no está disponible en este navegador. Usa el botón Descargar.');
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error sharing PDF:', error);
+        alert(`Error al compartir: ${error.message}`);
+      }
+    }
+  };
+
   // Función para cerrar modal
   const closePdfModal = () => {
     if (pdfModal.pdfUrl) {
@@ -107,6 +132,7 @@ export default function PresupuestosPage() {
     setPdfModal({
       isOpen: false,
       numeroPresupuesto: null,
+      locCod: null,
       pdfUrl: null,
       isLoading: false,
     });
@@ -310,19 +336,31 @@ export default function PresupuestosPage() {
                     {presupuesto.tienepdf === 1 ? (
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleViewPDF(presupuesto.pre_nro)}
+                          onClick={() => handleViewPDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
                         >
                           <Eye className="w-3 h-3" />
                           Ver
                         </button>
                         <button
-                          onClick={() => handleDownloadPDF(presupuesto.pre_nro)}
+                          onClick={() => handleDownloadPDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
                         >
                           <Download className="w-3 h-3" />
                           Descargar
                         </button>
+                        <button
+                          onClick={() => handleSharePDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
+                        >
+                          <Share2 className="w-3 h-3" />
+                          Compartir
+                        </button>
+                      </div>
+                    ) : presupuesto.tienepdf === 2 ? (
+                      <div className="inline-flex items-center gap-1 text-amber-400">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span className="text-xs">Sin contenido</span>
                       </div>
                     ) : (
                       <div className="inline-flex items-center gap-1 text-red-400">
@@ -451,7 +489,7 @@ export default function PresupuestosPage() {
                         {presupuesto.tienepdf === 1 ? (
                           <div className="flex gap-1 justify-center">
                             <button
-                              onClick={() => handleViewPDF(presupuesto.pre_nro)}
+                              onClick={() => handleViewPDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors cursor-pointer"
                               title="Ver PDF"
                             >
@@ -459,12 +497,24 @@ export default function PresupuestosPage() {
                               Ver
                             </button>
                             <button
-                              onClick={() => handleDownloadPDF(presupuesto.pre_nro)}
+                              onClick={() => handleDownloadPDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors cursor-pointer"
                               title="Descargar PDF"
                             >
                               <Download className="w-3 h-3" />
                             </button>
+                            <button
+                              onClick={() => handleSharePDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors cursor-pointer"
+                              title="Compartir PDF"
+                            >
+                              <Share2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : presupuesto.tienepdf === 2 ? (
+                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400" title="Registro sin contenido PDF">
+                            <AlertTriangle className="w-3 h-3" />
+                            Sin contenido
                           </div>
                         ) : (
                           <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400" title="Sin PDF">
@@ -606,7 +656,7 @@ export default function PresupuestosPage() {
               <div className="flex items-center gap-2">
                 {pdfModal.pdfUrl && (
                   <button
-                    onClick={() => pdfModal.numeroPresupuesto && handleDownloadPDF(pdfModal.numeroPresupuesto)}
+                    onClick={() => pdfModal.numeroPresupuesto && pdfModal.locCod && handleDownloadPDF(pdfModal.numeroPresupuesto, pdfModal.locCod)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
                   >
                     <Download className="w-4 h-4" />
@@ -636,7 +686,7 @@ export default function PresupuestosPage() {
                   pdfUrl={pdfModal.pdfUrl}
                   title={`Presupuesto ${pdfModal.numeroPresupuesto}`}
                   numeroDocumento={pdfModal.numeroPresupuesto || 0}
-                  onDownload={handleDownloadPDF}
+                  onDownload={(num) => handleDownloadPDF(num, pdfModal.locCod ?? 0)}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">

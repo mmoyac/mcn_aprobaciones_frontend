@@ -10,13 +10,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Hacer la petición al backend para órdenes de compra (tipo=2)
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8050/api/v1';
     const backendUrl = `${API_BASE}/documentos-pdf/get?tipo=2&numero=${numero}`;
-    
+    const tenantDomain = request.headers.get('host')?.split(':')[0] || '';
+
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
-        'x-api-key': 'supersecreta123',
+        'x-api-key': process.env.PDF_API_KEY || '',
+        'x-tenant-domain': tenantDomain,
         'Accept': 'application/pdf',
       },
     });

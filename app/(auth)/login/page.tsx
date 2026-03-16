@@ -3,16 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
-import { LogIn } from 'lucide-react';
+import { useTenant } from '@/lib/context/TenantContext';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { tenant, isLoading: isTenantLoading } = useTenant();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [credentials, setCredentials] = useState({
     usuario: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +24,9 @@ export default function LoginPage() {
 
     try {
       await authApi.login(credentials);
-      router.push('/dashboard');
+      // Pequeña pausa para que la cookie se propague antes de la navegación
+      await new Promise(resolve => setTimeout(resolve, 50));
+      router.replace('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al iniciar sesión');
     } finally {
@@ -35,11 +40,21 @@ export default function LoginPage() {
         <div className="bg-slate-800 rounded-lg shadow-2xl p-8 border border-slate-700">
           {/* Logo y título */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full mb-4">
+            <div
+              className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+              style={{ background: 'linear-gradient(135deg, var(--tenant-secondary), var(--tenant-primary))' }}
+            >
               <LogIn className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Aprobaciones</h1>
-            <p className="text-slate-400">Ingresa tus credenciales</p>
+            {/* Badge del tenant */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-700 border border-slate-600 mt-1">
+              <span className="w-2 h-2 rounded-full" style={{ background: 'var(--tenant-primary)' }}></span>
+              <span className="text-sm text-slate-300">
+                {isTenantLoading ? 'Cargando...' : (tenant?.nombre ?? 'Tenant desconocido')}
+              </span>
+            </div>
+            <p className="text-slate-400 mt-3">Ingresa tus credenciales</p>
           </div>
 
           {/* Error */}
@@ -70,21 +85,35 @@ export default function LoginPage() {
               <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
                 Contraseña
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={credentials.password}
-                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ingresa tu contraseña"
-              />
+              <div className="relative" suppressHydrationWarning>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  autoComplete="current-password"
+                  data-lpignore="true"
+                  data-1p-ignore
+                  value={credentials.password}
+                  onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                  className="w-full px-4 py-3 pr-12 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="Ingresa tu contraseña"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(to right, var(--tenant-secondary), var(--tenant-primary))' }}
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>

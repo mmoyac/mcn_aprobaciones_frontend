@@ -211,18 +211,20 @@ export default function PresupuestosPage() {
         <button
           onClick={() => setActiveTab('pendientes')}
           className={`px-6 py-3 font-medium transition-colors ${activeTab === 'pendientes'
-            ? 'text-teal-400 border-b-2 border-teal-400'
+            ? 'border-b-2'
             : 'text-slate-400 hover:text-slate-300'
             }`}
+          style={activeTab === 'pendientes' ? { color: 'var(--tenant-primary)', borderColor: 'var(--tenant-primary)' } : {}}
         >
           Pendientes
         </button>
         <button
           onClick={() => setActiveTab('aprobados')}
           className={`px-6 py-3 font-medium transition-colors ${activeTab === 'aprobados'
-            ? 'text-teal-400 border-b-2 border-teal-400'
+            ? 'border-b-2'
             : 'text-slate-400 hover:text-slate-300'
             }`}
+          style={activeTab === 'aprobados' ? { color: 'var(--tenant-primary)', borderColor: 'var(--tenant-primary)' } : {}}
         >
           Aprobados Hoy
         </button>
@@ -231,7 +233,7 @@ export default function PresupuestosPage() {
       {/* Loading */}
       {isLoading && (
         <div className="flex justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--tenant-primary)' }} />
         </div>
       )}
 
@@ -546,7 +548,7 @@ export default function PresupuestosPage() {
             </h3>
             <p className="text-slate-300 mb-6 text-center text-sm md:text-base">
               ¿Está seguro que desea {modalAction === 'aprobar' ? 'aprobar' : 'desaprobar'} el presupuesto N°{' '}
-              <span className="font-bold text-teal-400">
+              <span className="font-bold" style={{ color: 'var(--tenant-primary)' }}>
                 {selectedPresupuesto.pre_nro}
               </span>
               ?
@@ -570,9 +572,10 @@ export default function PresupuestosPage() {
                 onClick={confirmAction}
                 disabled={isPending}
                 className={`flex-1 px-4 py-3 text-white rounded-lg transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2 touch-manipulation ${modalAction === 'aprobar'
-                  ? 'bg-teal-600 hover:bg-teal-700 active:bg-teal-700'
+                  ? ''
                   : 'bg-red-600 hover:bg-red-700 active:bg-red-700'
                   }`}
+                style={modalAction === 'aprobar' ? { backgroundColor: 'var(--tenant-primary)' } : {}}
               >
                 {isPending ? (
                   <>

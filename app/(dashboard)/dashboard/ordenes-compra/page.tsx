@@ -216,18 +216,20 @@ export default function OrdenesCompraPage() {
         <button
           onClick={() => setActiveTab('pendientes')}
           className={`px-6 py-3 font-medium transition-colors ${activeTab === 'pendientes'
-            ? 'text-teal-400 border-b-2 border-teal-400'
+            ? 'border-b-2'
             : 'text-slate-400 hover:text-slate-300'
             }`}
+          style={activeTab === 'pendientes' ? { color: 'var(--tenant-primary)', borderColor: 'var(--tenant-primary)' } : {}}
         >
           Pendientes
         </button>
         <button
           onClick={() => setActiveTab('aprobadas')}
           className={`px-6 py-3 font-medium transition-colors ${activeTab === 'aprobadas'
-            ? 'text-teal-400 border-b-2 border-teal-400'
+            ? 'border-b-2'
             : 'text-slate-400 hover:text-slate-300'
             }`}
+          style={activeTab === 'aprobadas' ? { color: 'var(--tenant-primary)', borderColor: 'var(--tenant-primary)' } : {}}
         >
           Aprobadas Hoy
         </button>
@@ -236,7 +238,7 @@ export default function OrdenesCompraPage() {
       {/* Loading */}
       {isLoading && (
         <div className="flex justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--tenant-primary)' }} />
         </div>
       )}
 
@@ -553,9 +555,10 @@ export default function OrdenesCompraPage() {
                 disabled={isPending}
                 className={`px-4 py-2 text-white rounded-md transition-colors disabled:opacity-50 flex items-center gap-2 ${
                   modalAction === 'aprobar'
-                    ? 'bg-teal-600 hover:bg-teal-700'
+                    ? ''
                     : 'bg-red-600 hover:bg-red-700'
                 }`}
+                style={modalAction === 'aprobar' ? { backgroundColor: 'var(--tenant-primary)' } : {}}
               >
                 {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 {modalAction === 'aprobar' ? 'Aprobar' : 'Desaprobar'}

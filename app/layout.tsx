@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -14,12 +14,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "GONTEC Aprobaciones",
-  description: "Panel de aprobaciones GONTEC - Presupuestos y Órdenes de Compra",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-  manifest: "/manifest.json",
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#5ec8f2",
+};
+
+export const metadata: Metadata = {
+  title: "Aprobaciones",
+  description: "Panel de aprobaciones - Presupuestos y Órdenes de Compra",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -32,7 +38,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "GONTEC Aprobaciones",
+    title: "Aprobaciones",
   },
 };
 

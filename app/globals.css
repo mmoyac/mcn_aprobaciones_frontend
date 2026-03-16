@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Valores por defecto del tema tenant (se sobreescriben vía JS al cargar) */
+  --tenant-primary: #5EC8F2;
+  --tenant-secondary: #45A29A;
+  --tenant-background: #0F172A;
+  --tenant-surface: #1E293B;
+  --tenant-text: #F8FAFC;
 }
 
 @theme inline {

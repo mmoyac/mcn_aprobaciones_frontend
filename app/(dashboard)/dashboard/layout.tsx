@@ -3,10 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api/auth';
+import { useTenant } from '@/lib/context/TenantContext';
 import { LogOut, Home, FileText, ShoppingCart, Menu, X } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { tenant } = useTenant();
   const [user, setUser] = useState<{ usuario: string; nombre: string } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -26,15 +28,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--tenant-background)' }}>
       {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+      <header className="border-b border-slate-700 sticky top-0 z-50" style={{ backgroundColor: 'var(--tenant-surface)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop Header */}
           <div className="flex items-center justify-between h-16">
             {/* Logo y Nav Desktop */}
             <div className="flex items-center space-x-8">
-              <h1 className="text-lg sm:text-xl font-bold text-white">Aprobaciones</h1>
+              <h1 className="text-lg sm:text-xl font-bold" style={{ color: 'var(--tenant-primary)' }}>Aprobaciones</h1>
               
               {/* Navigation Desktop */}
               <nav className="hidden md:flex space-x-4">
@@ -94,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-slate-700 bg-slate-800">
+            <div className="md:hidden border-t border-slate-700" style={{ backgroundColor: 'var(--tenant-surface)' }}>
               <nav className="px-2 pt-2 pb-3 space-y-1">
                 <a
                   href="/dashboard"
@@ -140,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ color: 'var(--tenant-text)' }}>{children}</main>
     </div>
   );
 }

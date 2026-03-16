@@ -7,6 +7,7 @@ import { authApi } from '@/lib/api/auth';
 import { FileText, CheckCircle, Clock, ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import DbHealthAlert from '@/components/dashboard/DbHealthAlert';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function DashboardPage() {
     queryKey: ['presupuestos', 'aprobados', 'hoy', user?.usuario],
     queryFn: () => {
       if (!user?.usuario) return Promise.resolve([]);
-      const hoy = new Date().toISOString().split('T')[0];
+      const d = new Date(); const hoy = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       return presupuestosApi.getAprobados(user.usuario.toLowerCase(), hoy, hoy);
     },
     enabled: !!user?.usuario,
@@ -42,7 +43,7 @@ export default function DashboardPage() {
     queryKey: ['ordenes', 'aprobados', 'hoy', user?.usuario],
     queryFn: () => {
       if (!user?.usuario) return Promise.resolve([]);
-      const hoy = new Date().toISOString().split('T')[0];
+      const d = new Date(); const hoy = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       return ordenesApi.getAprobadas(user.usuario.toLowerCase(), hoy, hoy);
     },
     enabled: !!user?.usuario,
@@ -54,7 +55,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--tenant-primary)' }}></div>
       </div>
     );
   }
@@ -69,16 +70,19 @@ export default function DashboardPage() {
         <p className="text-slate-400">Vista general del sistema de aprobaciones</p>
       </div>
 
+      <DbHealthAlert />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* SECCION PRESUPUESTOS */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold text-slate-300 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-teal-400" /> Presupuestos
+            <FileText className="w-5 h-5" style={{ color: 'var(--tenant-primary)' }} /> Presupuestos
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Pendientes */}
             <div
-              className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:border-amber-500 transition-colors"
+              className="rounded-lg p-6 border border-slate-700 cursor-pointer transition-colors"
+              style={{ backgroundColor: 'var(--tenant-surface)' }}
               onClick={() => router.push('/dashboard/presupuestos?tab=pendientes')}
             >
               <div className="flex items-center justify-between mb-4">
@@ -95,7 +99,8 @@ export default function DashboardPage() {
 
             {/* Aprobados */}
             <div
-              className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:border-green-500 transition-colors"
+              className="rounded-lg p-6 border border-slate-700 cursor-pointer transition-colors"
+              style={{ backgroundColor: 'var(--tenant-surface)' }}
               onClick={() => router.push('/dashboard/presupuestos?tab=aprobados')}
             >
               <div className="flex items-center justify-between mb-4">
@@ -112,12 +117,13 @@ export default function DashboardPage() {
         {/* SECCION ORDENES DE COMPRA */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold text-slate-300 flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-purple-400" /> Órdenes de Compra
+            <ShoppingCart className="w-5 h-5" style={{ color: 'var(--tenant-secondary)' }} /> Órdenes de Compra
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Pendientes */}
             <div
-              className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:border-purple-500 transition-colors"
+              className="rounded-lg p-6 border border-slate-700 cursor-pointer transition-colors"
+              style={{ backgroundColor: 'var(--tenant-surface)' }}
               onClick={() => router.push('/dashboard/ordenes-compra?tab=pendientes')}
             >
               <div className="flex items-center justify-between mb-4">
@@ -134,7 +140,8 @@ export default function DashboardPage() {
 
             {/* Aprobados */}
             <div
-              className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:border-teal-500 transition-colors"
+              className="rounded-lg p-6 border border-slate-700 cursor-pointer transition-colors"
+              style={{ backgroundColor: 'var(--tenant-surface)' }}
               onClick={() => router.push('/dashboard/ordenes-compra?tab=aprobados')}
             >
               <div className="flex items-center justify-between mb-4">
@@ -151,7 +158,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Info adicional */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-lg p-6">
+      <div className="border border-slate-700 rounded-lg p-6" style={{ backgroundColor: 'var(--tenant-surface)' }}>
         <h3 className="text-lg font-semibold text-white mb-2">Bienvenido al Sistema</h3>
         <p className="text-slate-400 mb-4 max-w-3xl">
           Seleccione una categoría del menú lateral o haga clic en las tarjetas superiores para gestionar las aprobaciones pendientes.

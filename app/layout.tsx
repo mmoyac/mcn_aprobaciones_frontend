@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Aprobaciones",
   description: "Panel de aprobaciones - Presupuestos y Órdenes de Compra",
-  manifest: "/manifest.json",
+  manifest: "/api/manifest",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },

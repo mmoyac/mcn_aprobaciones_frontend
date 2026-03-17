@@ -25,9 +25,19 @@ Este documento es el manual de operaciones y contexto esencial para el **Backoff
 
 ### 2.1. URL Base de la API
 
-**Producción:** `https://api.lexastech.cl/api/v1`  
-**OpenAPI Docs:** https://api.lexastech.cl/openapi.json  
+**Desarrollo:** `http://localhost:8050/api/v1` (configurado en `.env.local`)
+**Producción:** `https://api.lexastech.cl/api/v1`
+**OpenAPI Docs:** https://api.lexastech.cl/openapi.json
 **Swagger UI:** https://api.lexastech.cl/docs
+
+### 2.1.1. URLs por Tenant
+
+| Tenant | Desarrollo | Producción |
+| :--- | :--- | :--- |
+| **mga** | http://mga.localhost:3000/ | http://aprobaciones-mga.lexastech.cl/ |
+| **gontec** | http://gontec.localhost:3000/ | http://aprobaciones-gontec.lexastech.cl/ |
+| **mgacom** | http://mgacom.localhost:3000/ | https://aprobaciones-mgacom.lexastech.cl/ ⚠️ pendiente de configurar |
+| **mgamaq** | http://mgamaq.localhost:3000/ | https://aprobaciones-mgamaq.lexastech.cl/ ⚠️ pendiente de configurar |
 
 ### 2.2. Configuración de Variables de Entorno
 

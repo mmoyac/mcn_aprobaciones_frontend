@@ -129,7 +129,15 @@ export default function OrdenesCompraPage() {
           text: `Orden de Compra N° ${numeroOrden}`,
         });
       } else {
-        alert('Compartir archivos no está disponible en este navegador. Usa el botón Descargar.');
+        // Fallback: descarga directa cuando share no está disponible
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `orden-compra-${numeroOrden}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       }
     } catch (error: any) {
       if (error.name !== 'AbortError') {

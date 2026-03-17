@@ -275,7 +275,7 @@ export default function PresupuestosPage() {
       {!isLoading && presupuestos && presupuestos.length > 0 && (
         <>
           {/* Vista Mobile: Cards */}
-          <div className="md:hidden space-y-4">
+          <div className="lg:hidden space-y-4">
             {presupuestos.map((presupuesto) => (
               <div
                 key={`mobile-${presupuesto.Loc_cod}-${presupuesto.pre_nro}`}
@@ -406,7 +406,7 @@ export default function PresupuestosPage() {
           </div>
 
           {/* Vista Desktop: Tabla */}
-          <div className="hidden md:block bg-slate-800 rounded-lg overflow-hidden">
+          <div className="hidden lg:block bg-slate-800 rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-900">

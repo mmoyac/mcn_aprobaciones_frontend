@@ -121,6 +121,18 @@ mcn_aprobaciones_frontend/
 - Tema dark por defecto (slate-800/900)
 - Función `cn()` para merge condicional de clases
 
+**Breakpoints para listas/tablas (OBLIGATORIO):**
+- Usar siempre `lg:` (1024px) como breakpoint para alternar entre vista cards y tabla.
+- **Nunca usar `md:`** para este propósito: los Android reportan ≥ 768px y verían la tabla con scroll horizontal en lugar de cards.
+- Patrón estándar:
+  ```tsx
+  {/* Vista Mobile: Cards */}
+  <div className="lg:hidden space-y-4">...</div>
+
+  {/* Vista Desktop: Tabla */}
+  <div className="hidden lg:block ...">...</div>
+  ```
+
 ---
 
 ## 4. 🐳 Docker: Build y Deployment
@@ -735,8 +747,8 @@ git push origin v1.0.1
 
 - **Repositorio:** https://github.com/mmoyac/mcn_aprobaciones_frontend
 - **Docker Hub:** https://hub.docker.com/r/mmoyac/mcn_aprobaciones_frontend
-- **Producción:** https://aprobaciones.lexastech.cl
 - **API Backend:** https://api.lexastech.cl
+- ~~https://aprobaciones.lexastech.cl~~ (deprecada, ya no se usa)
 - **Next.js Docs:** https://nextjs.org/docs
 - **Docker Compose:** https://docs.docker.com/compose/
 - **Let's Encrypt:** https://letsencrypt.org/

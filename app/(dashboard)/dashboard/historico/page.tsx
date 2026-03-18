@@ -222,12 +222,21 @@ export default function HistoricoPage() {
                     <BadgeEstado est={p.pre_est} />
                     <BadgeVB vb={p.pre_vbgg} />
                   </div>
-                  <PdfButtons
-                    p={p}
-                    onView={() => openPdf(p.pre_nro, p.Loc_cod)}
-                    onDownload={() => downloadPdf(p.pre_nro, p.Loc_cod)}
-                    onShare={() => sharePdf(p.pre_nro, p.Loc_cod)}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/dashboard/presupuestos/${p.Loc_cod}/${p.pre_nro}`}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+                      title="Ver detalle"
+                    >
+                      <ClipboardList size={14} />
+                    </Link>
+                    <PdfButtons
+                      p={p}
+                      onView={() => openPdf(p.pre_nro, p.Loc_cod)}
+                      onDownload={() => downloadPdf(p.pre_nro, p.Loc_cod)}
+                      onShare={() => sharePdf(p.pre_nro, p.Loc_cod)}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

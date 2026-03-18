@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2 } from 'lucide-react';
+import { CheckCircle, XCircle, Ban, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobados';
@@ -208,9 +209,20 @@ export default function PresupuestosPage() {
     },
   });
 
-  const [modalAction, setModalAction] = useState<'aprobar' | 'desaprobar'>('aprobar');
+  // Mutation para anular presupuesto
+  const anularMutation = useMutation({
+    mutationFn: (data: { Loc_cod: number; pre_nro: number }) =>
+      presupuestosApi.anular(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
+      queryClient.invalidateQueries({ queryKey: ['indicadores'] });
+      setSelectedPresupuesto(null);
+    },
+  });
 
-  const handleAction = (Loc_cod: number, pre_nro: number, action: 'aprobar' | 'desaprobar') => {
+  const [modalAction, setModalAction] = useState<'aprobar' | 'desaprobar' | 'anular'>('aprobar');
+
+  const handleAction = (Loc_cod: number, pre_nro: number, action: 'aprobar' | 'desaprobar' | 'anular') => {
     setModalAction(action);
     setSelectedPresupuesto({ Loc_cod, pre_nro });
   };
@@ -219,14 +231,16 @@ export default function PresupuestosPage() {
     if (selectedPresupuesto) {
       if (modalAction === 'aprobar') {
         aprobarMutation.mutate(selectedPresupuesto);
+      } else if (modalAction === 'anular') {
+        anularMutation.mutate(selectedPresupuesto);
       } else {
         desaprobarMutation.mutate(selectedPresupuesto);
       }
     }
   };
 
-  const isPending = aprobarMutation.isPending || desaprobarMutation.isPending;
-  const isError = aprobarMutation.isError || desaprobarMutation.isError;
+  const isPending = aprobarMutation.isPending || desaprobarMutation.isPending || anularMutation.isPending;
+  const isError = aprobarMutation.isError || desaprobarMutation.isError || anularMutation.isError;
   const isLoading = activeTab === 'pendientes' ? isLoadingPendientes : isLoadingAprobados;
   const presupuestos = activeTab === 'pendientes' ? pendientes : aprobados;
 
@@ -284,7 +298,12 @@ export default function PresupuestosPage() {
                 {/* Cabecera Card */}
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <span className="text-xs text-slate-500 font-mono">#{presupuesto.pre_nro}</span>
+                    <Link
+                      href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                      className="text-xs text-slate-500 font-mono hover:text-teal-400 transition-colors flex items-center gap-1"
+                    >
+                      #{presupuesto.pre_nro} <ChevronRight size={12} />
+                    </Link>
                     <h3 className="text-white font-medium text-lg leading-tight mt-1">
                       {presupuesto.cliente_nombre}
                     </h3>
@@ -379,17 +398,37 @@ export default function PresupuestosPage() {
                   </div>
                 </div>
 
+                {/* Ver Detalle */}
+                <Link
+                  href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 bg-slate-700 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-600 rounded-lg font-medium transition-colors text-sm"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Ver Detalle
+                </Link>
+
                 {/* Acción Card */}
                 {activeTab === 'pendientes' ? (
-                  <button
-                    onClick={() =>
-                      handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'aprobar')
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 active:bg-teal-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    <CheckCircle className="w-5 h-5" />
-                    Aprobar Presupuesto
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() =>
+                        handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'aprobar')
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 active:bg-teal-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Aprobar Presupuesto
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'anular')
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-700 border border-red-600/40 text-red-400 active:bg-slate-600 rounded-lg font-medium transition-colors"
+                    >
+                      <Ban className="w-5 h-5" />
+                      Anular Presupuesto
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={() =>
@@ -408,47 +447,47 @@ export default function PresupuestosPage() {
           {/* Vista Desktop: Tabla */}
           <div className="hidden lg:block bg-slate-800 rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead className="bg-slate-900">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                      N° Presupuesto
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      N°
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Fecha
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                      Cliente (RUT)
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Cliente
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                      Solicitud
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Referencia
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Estado
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300">
-                      Precio Neto
+                    <th className="px-3 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      Neto
                     </th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       PDF
                     </th>
+                    <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Det.
+                    </th>
                     {activeTab === 'pendientes' && (
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
-                        Acción
+                      <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        Acciones
                       </th>
                     )}
                     {activeTab === 'aprobados' && (
                       <>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                           Aprobado Por
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                          Fecha Aprobación
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                          Fec. Aprobación
                         </th>
-                        <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                           Acción
                         </th>
                       </>
@@ -461,108 +500,124 @@ export default function PresupuestosPage() {
                       key={`${presupuesto.Loc_cod}-${presupuesto.pre_nro}`}
                       className="hover:bg-slate-700/50 transition-colors"
                     >
-                      <td className="px-6 py-4 text-white font-medium">
-                        {presupuesto.pre_nro}
+                      <td className="px-3 py-3 text-white font-medium whitespace-nowrap">
+                        <Link
+                          href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                          className="hover:text-teal-400 transition-colors"
+                        >
+                          {presupuesto.pre_nro}
+                        </Link>
                       </td>
-                      <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                      <td className="px-3 py-3 text-slate-300 whitespace-nowrap">
                         {formatDate(presupuesto.pre_fec)}
                       </td>
-                      <td className="px-6 py-4 text-slate-300">
-                        <div className="flex flex-col">
-                          <span className="text-white font-medium">{presupuesto.cliente_nombre}</span>
-                          <span className="text-xs text-slate-500">{presupuesto.pre_rut}</span>
-                        </div>
+                      <td className="px-3 py-3 text-slate-300 max-w-[180px]">
+                        <span className="text-white font-medium block truncate">{presupuesto.cliente_nombre}</span>
                       </td>
-                      <td className="px-6 py-4 text-slate-300">
-                        {presupuesto.sol_nro || '-'}
-                      </td>
-                      <td className="px-6 py-4 text-slate-300 text-sm max-w-[200px] truncate" title={presupuesto.pre_ref}>
+                      <td className="px-3 py-3 text-slate-400 max-w-[160px] truncate" title={presupuesto.pre_ref}>
                         {presupuesto.pre_ref || '-'}
                       </td>
-                      <td className="px-6 py-4 text-slate-300">
+                      <td className="px-3 py-3 text-slate-300">
                         {(() => {
                           const est = presupuesto.pre_est?.trim().toUpperCase();
                           switch (est) {
-                            case 'N': return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">No Vigente</span>;
-                            case 'P': return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400">Perdido</span>;
-                            case 'G': return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-500/20 text-teal-400">Ganado</span>;
-                            default: return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">Sin Asignación</span>;
+                            case 'N': return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">No Vigente</span>;
+                            case 'P': return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">Perdido</span>;
+                            case 'G': return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-500/20 text-teal-400">Ganado</span>;
+                            default: return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">Sin Asig.</span>;
                           }
                         })()}
                       </td>
-                      <td className="px-6 py-4 text-right text-white font-semibold whitespace-nowrap">
+                      <td className="px-3 py-3 text-right text-white font-semibold whitespace-nowrap">
                         {formatCurrency(presupuesto.Pre_Neto)}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-3 py-3 text-center">
                         {presupuesto.tienepdf === 1 ? (
                           <div className="flex gap-1 justify-center">
                             <button
                               onClick={() => handleViewPDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors cursor-pointer"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
                               title="Ver PDF"
                             >
-                              <Eye className="w-3 h-3" />
-                              Ver
+                              <Eye className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDownloadPDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors cursor-pointer"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
                               title="Descargar PDF"
                             >
-                              <Download className="w-3 h-3" />
+                              <Download className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleSharePDF(presupuesto.pre_nro, presupuesto.Loc_cod)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors cursor-pointer"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
                               title="Compartir PDF"
                             >
-                              <Share2 className="w-3 h-3" />
+                              <Share2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ) : presupuesto.tienepdf === 2 ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400" title="Registro sin contenido PDF">
-                            <AlertTriangle className="w-3 h-3" />
-                            Sin contenido
-                          </div>
+                          <span title="Sin contenido PDF">
+                            <AlertTriangle className="w-4 h-4 text-amber-400 mx-auto" />
+                          </span>
                         ) : (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400" title="Sin PDF">
-                            <FileX className="w-3 h-3" />
-                            Sin PDF
-                          </div>
+                          <span title="Sin PDF">
+                            <FileX className="w-4 h-4 text-red-400/50 mx-auto" />
+                          </span>
                         )}
                       </td>
+                      <td className="px-3 py-3 text-center">
+                        <Link
+                          href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+                          title="Ver detalle"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                        </Link>
+                      </td>
                       {activeTab === 'pendientes' && (
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() =>
-                              handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'aprobar')
-                            }
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-md transition-colors font-medium text-sm"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Aprobar
-                          </button>
+                        <td className="px-3 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() =>
+                                handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'aprobar')
+                              }
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 hover:bg-teal-700 text-white transition-colors"
+                              title="Aprobar"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'anular')
+                              }
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 border border-red-600/30 transition-colors"
+                              title="Anular"
+                            >
+                              <Ban className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       )}
                       {activeTab === 'aprobados' && (
                         <>
-                          <td className="px-6 py-4 text-slate-300">
+                          <td className="px-3 py-3 text-slate-300">
                             {presupuesto.pre_vbggUsu || '-'}
                           </td>
-                          <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                          <td className="px-3 py-3 text-slate-300 whitespace-nowrap">
                             {presupuesto.pre_vbggDt
                               ? formatDate(presupuesto.pre_vbggDt)
                               : '-'}
                           </td>
-                          <td className="px-6 py-4 text-center">
+                          <td className="px-3 py-3 text-center">
                             <button
                               onClick={() =>
                                 handleAction(presupuesto.Loc_cod, presupuesto.pre_nro, 'desaprobar')
                               }
-                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 border border-red-600/30 rounded-md transition-colors font-medium text-sm"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 border border-red-600/30 transition-colors"
+                              title="Deshacer aprobación"
                             >
                               <XCircle className="w-4 h-4" />
-                              Deshacer
                             </button>
                           </td>
                         </>
@@ -602,11 +657,11 @@ export default function PresupuestosPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg md:text-xl font-bold text-white mb-4 text-center">
-              {modalAction === 'aprobar' ? 'Confirmar Aprobación' : 'Confirmar Desaprobación'}
+              {modalAction === 'aprobar' ? 'Confirmar Aprobación' : modalAction === 'anular' ? 'Confirmar Anulación' : 'Confirmar Desaprobación'}
             </h3>
             <p className="text-slate-300 mb-6 text-center text-sm md:text-base">
-              ¿Está seguro que desea {modalAction === 'aprobar' ? 'aprobar' : 'desaprobar'} el presupuesto N°{' '}
-              <span className="font-bold" style={{ color: 'var(--tenant-primary)' }}>
+              ¿Está seguro que desea {modalAction === 'aprobar' ? 'aprobar' : modalAction === 'anular' ? 'anular' : 'desaprobar'} el presupuesto N°{' '}
+              <span className="font-bold" style={{ color: modalAction === 'anular' ? '#f87171' : 'var(--tenant-primary)' }}>
                 {selectedPresupuesto.pre_nro}
               </span>
               ?
@@ -642,8 +697,8 @@ export default function PresupuestosPage() {
                   </>
                 ) : (
                   <>
-                    {modalAction === 'aprobar' ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                    {modalAction === 'aprobar' ? 'Aprobar' : 'Desaprobar'}
+                    {modalAction === 'aprobar' ? <CheckCircle className="w-4 h-4" /> : modalAction === 'anular' ? <Ban className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                    {modalAction === 'aprobar' ? 'Aprobar' : modalAction === 'anular' ? 'Anular' : 'Desaprobar'}
                   </>
                 )}
               </button>

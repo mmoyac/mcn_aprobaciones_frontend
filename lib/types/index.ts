@@ -56,6 +56,52 @@ export interface PresupuestoAprobadoResponse {
   pre_vbggTime: string;
 }
 
+// Tipos para detalle de presupuesto
+export interface CostoItem {
+  pre_lin: number;
+  pre_dtlin: number;
+  Pre_DtTip: number;
+  tipo_nombre: string;
+  Pre_DtCant: number;
+  Pre_DtPre: number;
+  Pre_DtDescrip: string;
+}
+
+export interface ItemPresupuesto {
+  pre_lin: number;
+  pre_des: string;
+  pre_de1: string;
+  pre_de2: string;
+  pre_de3: string;
+  pre_de4: string;
+  pre_cpr: number;
+  pre_pre: number;
+  pre_dct: number;
+  costos: CostoItem[];
+}
+
+export interface DetallePresupuesto {
+  loc_cod: number;
+  pre_nro: number;
+  items: ItemPresupuesto[];
+}
+
+export interface PresupuestoHistorico {
+  Loc_cod: number;
+  pre_nro: number;
+  pre_fec: string;
+  pre_rut: number;
+  cliente_nombre: string;
+  sol_nro: number;
+  pre_ref: string;
+  Pre_Neto: number;
+  pre_est: string;
+  pre_vbgg: number;
+  pre_vbggUsu: string;
+  pre_vbggDt: string;
+  tienepdf?: number;
+}
+
 // Tipos para Órdenes de Compra
 export interface OrdenCompraIndicadores {
   total: number;

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { ordenesApi } from '@/lib/api/ordenes';
 import { authApi } from '@/lib/api/auth';
-import { FileText, CheckCircle, Clock, ShoppingCart } from 'lucide-react';
+import { FileText, CheckCircle, Clock, ShoppingCart, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import DbHealthAlert from '@/components/dashboard/DbHealthAlert';
@@ -155,6 +155,29 @@ export default function DashboardPage() {
           </div>
         </div>
 
+      </div>
+
+      {/* SECCION HISTORICO */}
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold text-slate-300 flex items-center gap-2 mb-4">
+          <Search className="w-5 h-5 text-violet-400" /> Búsqueda
+        </h3>
+        <div
+          className="rounded-lg p-6 border border-slate-700 cursor-pointer transition-colors max-w-sm"
+          style={{ backgroundColor: 'var(--tenant-surface)' }}
+          onClick={() => router.push('/dashboard/historico')}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-violet-500/10 rounded-lg">
+              <Search className="w-6 h-6 text-violet-400" />
+            </div>
+            <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded-full">
+              Buscar
+            </span>
+          </div>
+          <h3 className="text-sm font-medium text-slate-400 mb-1">Historial de Presupuestos</h3>
+          <p className="text-slate-300 text-sm">Buscar por cliente o referencia</p>
+        </div>
       </div>
 
       {/* Info adicional */}

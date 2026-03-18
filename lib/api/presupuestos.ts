@@ -6,6 +6,8 @@ import {
   PresupuestoDetalle,
   PresupuestoAprobar,
   PresupuestoAprobadoResponse,
+  DetallePresupuesto,
+  PresupuestoHistorico,
 } from '../types';
 
 export const presupuestosApi = {
@@ -47,10 +49,32 @@ export const presupuestosApi = {
     return data;
   },
 
+  anular: async (presupuesto: PresupuestoAprobar): Promise<PresupuestoAprobadoResponse> => {
+    const { data } = await apiClient.post<PresupuestoAprobadoResponse>(
+      '/presupuestos/anular',
+      presupuesto
+    );
+    return data;
+  },
+
   desaprobar: async (presupuesto: PresupuestoAprobar): Promise<PresupuestoAprobadoResponse> => {
     const { data } = await apiClient.post<PresupuestoAprobadoResponse>(
       '/presupuestos/desaprobar',
       presupuesto
+    );
+    return data;
+  },
+
+  buscarHistorico: async (q: string, skip = 0, limit = 50): Promise<PresupuestoHistorico[]> => {
+    const { data } = await apiClient.get<PresupuestoHistorico[]>('/presupuestos/historico', {
+      params: { q, skip, limit },
+    });
+    return data;
+  },
+
+  getDetalle: async (loc_cod: number, pre_nro: number): Promise<DetallePresupuesto> => {
+    const { data } = await apiClient.get<DetallePresupuesto>(
+      `/presupuestos/${loc_cod}/${pre_nro}/detalle`
     );
     return data;
   },

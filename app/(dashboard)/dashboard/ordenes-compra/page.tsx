@@ -403,44 +403,44 @@ export default function OrdenesCompraPage() {
           {/* Vista Desktop: Tabla */}
           <div className="hidden lg:block bg-slate-800 rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead className="bg-slate-900">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                      N° Orden
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      N°
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Fecha
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Proveedor
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Entrega Est.
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Estado
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       PDF
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300">
+                    <th className="px-3 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Monto Total
                     </th>
                     {activeTab === 'pendientes' && (
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
+                      <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                         Acción
                       </th>
                     )}
                     {activeTab === 'aprobadas' && (
                       <>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                           Aprobado Por
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                          Fecha Aprobación
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                          Fec. Aprobación
                         </th>
-                        <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                           Acción
                         </th>
                       </>
@@ -453,103 +453,94 @@ export default function OrdenesCompraPage() {
                       key={`${orden.Loc_cod}-${orden.ocp_nro}`}
                       className="hover:bg-slate-700/50 transition-colors"
                     >
-                      <td className="px-6 py-4 text-white font-medium">
+                      <td className="px-3 py-3 text-white font-medium whitespace-nowrap">
                         {orden.ocp_nro}
                       </td>
-                      <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                      <td className="px-3 py-3 text-slate-300 whitespace-nowrap">
                         {formatDate(orden.ocp_fec)}
                       </td>
-                      <td className="px-6 py-4 text-slate-300">
-                        <div className="flex flex-col">
-                          <span className="text-white font-medium">{orden.proveedor_nombre}</span>
-                          <span className="text-xs text-slate-500">{orden.pro_rut}</span>
-                        </div>
+                      <td className="px-3 py-3 text-slate-300 max-w-[200px]">
+                        <span className="text-white font-medium block truncate">{orden.proveedor_nombre}</span>
                       </td>
-                      <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                      <td className="px-3 py-3 text-slate-300 whitespace-nowrap">
                         {formatDate(orden.ocp_fee)}
                       </td>
-                      <td className="px-6 py-4 text-slate-300">
+                      <td className="px-3 py-3 text-slate-300">
                         {(() => {
                           const est = orden.ocp_pdt?.trim().toUpperCase();
                           switch (est) {
-                            case 'I': return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">Pendiente</span>;
-                            case 'T': return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-500/20 text-teal-400">Recepcionada</span>;
-                            case 'N': return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Nula</span>;
-                            default: return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400">{est || 'Sin Estado'}</span>;
+                            case 'I': return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">Pendiente</span>;
+                            case 'T': return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-500/20 text-teal-400">Recepcionada</span>;
+                            case 'N': return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Nula</span>;
+                            default: return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400">{est || 'Sin Estado'}</span>;
                           }
                         })()}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3 text-center">
                         {orden.tienepdf === 1 ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex gap-1 justify-center">
                             <button
                               onClick={() => handleViewPDF(orden.ocp_nro, orden.Loc_cod)}
-                              className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
                               title="Ver PDF"
                             >
-                              <Eye className="w-3 h-3" />
+                              <Eye className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDownloadPDF(orden.ocp_nro, orden.Loc_cod)}
-                              className="flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-xs"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
                               title="Descargar PDF"
                             >
-                              <Download className="w-3 h-3" />
+                              <Download className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleSharePDF(orden.ocp_nro, orden.Loc_cod)}
-                              className="flex items-center gap-1 px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors text-xs"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
                               title="Compartir PDF"
                             >
-                              <Share2 className="w-3 h-3" />
+                              <Share2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ) : orden.tienepdf === 2 ? (
-                          <div className="flex items-center gap-1 text-amber-400">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span className="text-xs">Sin contenido</span>
-                          </div>
+                          <span title="Sin contenido PDF">
+                            <AlertTriangle className="w-4 h-4 text-amber-400 mx-auto" />
+                          </span>
                         ) : (
-                          <div className="flex items-center gap-1 text-slate-500">
-                            <FileX className="w-4 h-4" />
-                            <span className="text-xs">Sin PDF</span>
-                          </div>
+                          <span title="Sin PDF">
+                            <FileX className="w-4 h-4 text-red-400/50 mx-auto" />
+                          </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right text-white font-semibold whitespace-nowrap">
+                      <td className="px-3 py-3 text-right text-white font-semibold whitespace-nowrap">
                         {formatCurrency(orden.monto_total)}
                       </td>
                       {activeTab === 'pendientes' && (
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-3 py-3 text-center">
                           <button
                             onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'aprobar')}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-md transition-colors font-medium text-sm"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 hover:bg-teal-700 text-white transition-colors"
+                            title="Aprobar"
                           >
                             <CheckCircle className="w-4 h-4" />
-                            Aprobar
                           </button>
                         </td>
                       )}
                       {activeTab === 'aprobadas' && (
                         <>
-                          <td className="px-6 py-4 text-slate-300">
-                            <div className="flex flex-col">
-                              <span className="text-white font-medium">{orden.ocp_A2_Usu}</span>
-                              <span className="text-xs text-slate-500">
-                                {orden.ocp_A2_Hr ? `${orden.ocp_A2_Hr}` : ''}
-                              </span>
-                            </div>
+                          <td className="px-3 py-3 text-slate-300">
+                            <span className="text-white font-medium block">{orden.ocp_A2_Usu}</span>
+                            {orden.ocp_A2_Hr && <span className="text-xs text-slate-500">{orden.ocp_A2_Hr}</span>}
                           </td>
-                          <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                          <td className="px-3 py-3 text-slate-300 whitespace-nowrap">
                             {orden.ocp_A2_Dt ? formatDate(orden.ocp_A2_Dt) : '-'}
                           </td>
-                          <td className="px-6 py-4 text-center">
+                          <td className="px-3 py-3 text-center">
                             <button
                               onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'desaprobar')}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors font-medium text-sm"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 border border-red-600/30 transition-colors"
+                              title="Deshacer aprobación"
                             >
                               <XCircle className="w-4 h-4" />
-                              Desaprobar
                             </button>
                           </td>
                         </>

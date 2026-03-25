@@ -12,7 +12,7 @@ export const ordenesApi = {
         return data;
     },
 
-    getPendientes: async (skip = 0, limit = 100): Promise<OrdenCompraDetalle[]> => {
+    getPendientes: async (skip = 0, limit = 5000): Promise<OrdenCompraDetalle[]> => {
         const { data } = await apiClient.get<OrdenCompraDetalle[]>('/ordenes-compra/pendientes', {
             params: { skip, limit }
         });

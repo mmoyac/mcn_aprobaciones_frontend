@@ -49,8 +49,8 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Token expirado, inválido o sin permisos
       Cookies.remove('access_token');
       Cookies.remove('user');
       window.location.href = '/login';

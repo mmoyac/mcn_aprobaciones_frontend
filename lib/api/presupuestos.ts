@@ -16,7 +16,7 @@ export const presupuestosApi = {
     return data;
   },
 
-  getPendientes: async (skip = 0, limit = 100): Promise<PresupuestoDetalle[]> => {
+  getPendientes: async (skip = 0, limit = 5000): Promise<PresupuestoDetalle[]> => {
     const { data } = await apiClient.get<PresupuestoDetalle[]>('/presupuestos/pendientes', {
       params: { skip, limit },
     });

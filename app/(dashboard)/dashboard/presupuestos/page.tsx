@@ -242,7 +242,26 @@ export default function PresupuestosPage() {
   const isPending = aprobarMutation.isPending || desaprobarMutation.isPending || anularMutation.isPending;
   const isError = aprobarMutation.isError || desaprobarMutation.isError || anularMutation.isError;
   const isLoading = activeTab === 'pendientes' ? isLoadingPendientes : isLoadingAprobados;
-  const presupuestos = activeTab === 'pendientes' ? pendientes : aprobados;
+
+  const [selectedLocCod, setSelectedLocCod] = useState<number | null>(null);
+
+  // Derivar sucursales distintas con pendientes
+  const localesConPendientes = pendientes
+    ? Array.from(
+        new Map(
+          pendientes.map((p) => [p.Loc_cod, { loc_cod: p.Loc_cod, loc_des: p.loc_des || `Local ${p.Loc_cod}` }])
+        ).values()
+      ).sort((a, b) => a.loc_cod - b.loc_cod)
+    : [];
+
+  // Filtrar pendientes por sucursal seleccionada (client-side)
+  const pendientesFiltrados = pendientes
+    ? selectedLocCod !== null
+      ? pendientes.filter((p) => p.Loc_cod === selectedLocCod)
+      : pendientes
+    : [];
+
+  const presupuestos = activeTab === 'pendientes' ? pendientesFiltrados : aprobados;
 
   return (
     <div className="space-y-6">
@@ -277,6 +296,25 @@ export default function PresupuestosPage() {
           Aprobados Hoy
         </button>
       </div>
+
+      {/* Selector de sucursal (solo pendientes con más de 1 local) */}
+      {activeTab === 'pendientes' && !isLoadingPendientes && localesConPendientes.length > 1 && (
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-slate-400 whitespace-nowrap">Sucursal:</label>
+          <select
+            value={selectedLocCod ?? ''}
+            onChange={(e) => setSelectedLocCod(e.target.value === '' ? null : Number(e.target.value))}
+            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-slate-400"
+          >
+            <option value="">Todas ({pendientes?.length ?? 0})</option>
+            {localesConPendientes.map((local) => (
+              <option key={local.loc_cod} value={local.loc_cod}>
+                {local.loc_des} ({pendientes?.filter((p) => p.Loc_cod === local.loc_cod).length ?? 0})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Loading */}
       {isLoading && (

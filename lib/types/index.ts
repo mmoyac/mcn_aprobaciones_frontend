@@ -39,6 +39,7 @@ export interface PresupuestoDetalle {
   pre_trnFec: string;
   pre_trnusu: string;
   tienepdf?: number; // 0 = no existe, 1 = tiene PDF, 2 = existe sin contenido
+  loc_des?: string | null;
 }
 
 export interface PresupuestoAprobar {
@@ -122,6 +123,7 @@ export interface OrdenCompraDetalle {
   ocp_ila: number;
   monto_total: number;
   tienepdf?: number;
+  loc_des?: string | null;
   ocp_A2_Usu?: string;
   ocp_A2_Dt?: string;
   ocp_A2_Hr?: string;

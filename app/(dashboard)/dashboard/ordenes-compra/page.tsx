@@ -216,6 +216,7 @@ export default function OrdenesCompraPage() {
   });
 
   const [modalAction, setModalAction] = useState<'aprobar' | 'desaprobar'>('aprobar');
+  const [selectedLocCod, setSelectedLocCod] = useState<number | null>(null);
 
   const handleAction = (Loc_cod: number, ocp_nro: number, action: 'aprobar' | 'desaprobar') => {
     setModalAction(action);
@@ -235,7 +236,24 @@ export default function OrdenesCompraPage() {
   const isPending = aprobarMutation.isPending || desaprobarMutation.isPending;
   const isError = aprobarMutation.isError || desaprobarMutation.isError;
   const isLoading = activeTab === 'pendientes' ? isLoadingPendientes : isLoadingAprobadas;
-  const ordenes = activeTab === 'pendientes' ? pendientes : aprobadas;
+
+  // Derivar sucursales distintas con pendientes
+  const localesConPendientes = pendientes
+    ? Array.from(
+        new Map(
+          pendientes.map((o) => [o.Loc_cod, { loc_cod: o.Loc_cod, loc_des: o.loc_des || `Local ${o.Loc_cod}` }])
+        ).values()
+      ).sort((a, b) => a.loc_cod - b.loc_cod)
+    : [];
+
+  // Filtrar pendientes por sucursal seleccionada (client-side)
+  const pendientesFiltrados = pendientes
+    ? selectedLocCod !== null
+      ? pendientes.filter((o) => o.Loc_cod === selectedLocCod)
+      : pendientes
+    : [];
+
+  const ordenes = activeTab === 'pendientes' ? pendientesFiltrados : aprobadas;
 
   return (
     <div className="space-y-6">
@@ -270,6 +288,25 @@ export default function OrdenesCompraPage() {
           Aprobadas Hoy
         </button>
       </div>
+
+      {/* Selector de sucursal (solo pendientes con más de 1 local) */}
+      {activeTab === 'pendientes' && !isLoadingPendientes && localesConPendientes.length > 1 && (
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-slate-400 whitespace-nowrap">Sucursal:</label>
+          <select
+            value={selectedLocCod ?? ''}
+            onChange={(e) => setSelectedLocCod(e.target.value === '' ? null : Number(e.target.value))}
+            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-slate-400"
+          >
+            <option value="">Todas ({pendientes?.length ?? 0})</option>
+            {localesConPendientes.map((local) => (
+              <option key={local.loc_cod} value={local.loc_cod}>
+                {local.loc_des} ({pendientes?.filter((o) => o.Loc_cod === local.loc_cod).length ?? 0})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Loading */}
       {isLoading && (

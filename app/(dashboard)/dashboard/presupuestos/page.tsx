@@ -244,6 +244,8 @@ export default function PresupuestosPage() {
   const isLoading = activeTab === 'pendientes' ? isLoadingPendientes : isLoadingAprobados;
 
   const [selectedLocCod, setSelectedLocCod] = useState<number | null>(null);
+  const [filterNro, setFilterNro] = useState('');
+  const [filterCliente, setFilterCliente] = useState('');
 
   // Derivar sucursales distintas con pendientes
   const localesConPendientes = pendientes
@@ -254,11 +256,14 @@ export default function PresupuestosPage() {
       ).sort((a, b) => a.loc_cod - b.loc_cod)
     : [];
 
-  // Filtrar pendientes por sucursal seleccionada (client-side)
+  // Filtrar pendientes por sucursal, número y cliente (client-side)
   const pendientesFiltrados = pendientes
-    ? selectedLocCod !== null
-      ? pendientes.filter((p) => p.Loc_cod === selectedLocCod)
-      : pendientes
+    ? pendientes.filter((p) => {
+        if (selectedLocCod !== null && p.Loc_cod !== selectedLocCod) return false;
+        if (filterNro && !String(p.pre_nro).includes(filterNro.trim())) return false;
+        if (filterCliente && !p.cliente_nombre?.toLowerCase().includes(filterCliente.trim().toLowerCase())) return false;
+        return true;
+      })
     : [];
 
   const presupuestos = activeTab === 'pendientes' ? pendientesFiltrados : aprobados;
@@ -297,22 +302,41 @@ export default function PresupuestosPage() {
         </button>
       </div>
 
-      {/* Selector de sucursal (solo pendientes con más de 1 local) */}
-      {activeTab === 'pendientes' && !isLoadingPendientes && localesConPendientes.length > 1 && (
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-slate-400 whitespace-nowrap">Sucursal:</label>
-          <select
-            value={selectedLocCod ?? ''}
-            onChange={(e) => setSelectedLocCod(e.target.value === '' ? null : Number(e.target.value))}
-            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-slate-400"
-          >
-            <option value="">Todas ({pendientes?.length ?? 0})</option>
-            {localesConPendientes.map((local) => (
-              <option key={local.loc_cod} value={local.loc_cod}>
-                {local.loc_des} ({pendientes?.filter((p) => p.Loc_cod === local.loc_cod).length ?? 0})
-              </option>
-            ))}
-          </select>
+      {/* Filtros pendientes */}
+      {activeTab === 'pendientes' && !isLoadingPendientes && (
+        <div className="flex flex-wrap items-center gap-3">
+          {localesConPendientes.length > 1 && (
+            <>
+              <label className="text-sm text-slate-400 whitespace-nowrap">Sucursal:</label>
+              <select
+                value={selectedLocCod ?? ''}
+                onChange={(e) => setSelectedLocCod(e.target.value === '' ? null : Number(e.target.value))}
+                className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-slate-400"
+              >
+                <option value="">Todas ({pendientes?.length ?? 0})</option>
+                {localesConPendientes.map((local) => (
+                  <option key={local.loc_cod} value={local.loc_cod}>
+                    {local.loc_des} ({pendientes?.filter((p) => p.Loc_cod === local.loc_cod).length ?? 0})
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="N° presupuesto"
+            value={filterNro}
+            onChange={(e) => setFilterNro(e.target.value)}
+            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 w-40 focus:outline-none focus:border-slate-400 placeholder-slate-500"
+          />
+          <input
+            type="text"
+            placeholder="Cliente"
+            value={filterCliente}
+            onChange={(e) => setFilterCliente(e.target.value)}
+            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 w-52 focus:outline-none focus:border-slate-400 placeholder-slate-500"
+          />
         </div>
       )}
 

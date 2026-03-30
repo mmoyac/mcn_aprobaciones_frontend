@@ -217,6 +217,8 @@ export default function OrdenesCompraPage() {
 
   const [modalAction, setModalAction] = useState<'aprobar' | 'desaprobar'>('aprobar');
   const [selectedLocCod, setSelectedLocCod] = useState<number | null>(null);
+  const [filterNro, setFilterNro] = useState('');
+  const [filterProveedor, setFilterProveedor] = useState('');
 
   const handleAction = (Loc_cod: number, ocp_nro: number, action: 'aprobar' | 'desaprobar') => {
     setModalAction(action);
@@ -246,11 +248,14 @@ export default function OrdenesCompraPage() {
       ).sort((a, b) => a.loc_cod - b.loc_cod)
     : [];
 
-  // Filtrar pendientes por sucursal seleccionada (client-side)
+  // Filtrar pendientes por sucursal, número y proveedor (client-side)
   const pendientesFiltrados = pendientes
-    ? selectedLocCod !== null
-      ? pendientes.filter((o) => o.Loc_cod === selectedLocCod)
-      : pendientes
+    ? pendientes.filter((o) => {
+        if (selectedLocCod !== null && o.Loc_cod !== selectedLocCod) return false;
+        if (filterNro && !String(o.ocp_nro).includes(filterNro.trim())) return false;
+        if (filterProveedor && !o.proveedor_nombre?.toLowerCase().includes(filterProveedor.trim().toLowerCase())) return false;
+        return true;
+      })
     : [];
 
   const ordenes = activeTab === 'pendientes' ? pendientesFiltrados : aprobadas;
@@ -289,22 +294,41 @@ export default function OrdenesCompraPage() {
         </button>
       </div>
 
-      {/* Selector de sucursal (solo pendientes con más de 1 local) */}
-      {activeTab === 'pendientes' && !isLoadingPendientes && localesConPendientes.length > 1 && (
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-slate-400 whitespace-nowrap">Sucursal:</label>
-          <select
-            value={selectedLocCod ?? ''}
-            onChange={(e) => setSelectedLocCod(e.target.value === '' ? null : Number(e.target.value))}
-            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-slate-400"
-          >
-            <option value="">Todas ({pendientes?.length ?? 0})</option>
-            {localesConPendientes.map((local) => (
-              <option key={local.loc_cod} value={local.loc_cod}>
-                {local.loc_des} ({pendientes?.filter((o) => o.Loc_cod === local.loc_cod).length ?? 0})
-              </option>
-            ))}
-          </select>
+      {/* Filtros pendientes */}
+      {activeTab === 'pendientes' && !isLoadingPendientes && (
+        <div className="flex flex-wrap items-center gap-3">
+          {localesConPendientes.length > 1 && (
+            <>
+              <label className="text-sm text-slate-400 whitespace-nowrap">Sucursal:</label>
+              <select
+                value={selectedLocCod ?? ''}
+                onChange={(e) => setSelectedLocCod(e.target.value === '' ? null : Number(e.target.value))}
+                className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-slate-400"
+              >
+                <option value="">Todas ({pendientes?.length ?? 0})</option>
+                {localesConPendientes.map((local) => (
+                  <option key={local.loc_cod} value={local.loc_cod}>
+                    {local.loc_des} ({pendientes?.filter((o) => o.Loc_cod === local.loc_cod).length ?? 0})
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="N° orden"
+            value={filterNro}
+            onChange={(e) => setFilterNro(e.target.value)}
+            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 w-40 focus:outline-none focus:border-slate-400 placeholder-slate-500"
+          />
+          <input
+            type="text"
+            placeholder="Proveedor"
+            value={filterProveedor}
+            onChange={(e) => setFilterProveedor(e.target.value)}
+            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-md px-3 py-2 w-52 focus:outline-none focus:border-slate-400 placeholder-slate-500"
+          />
         </div>
       )}
 

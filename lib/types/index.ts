@@ -166,12 +166,12 @@ export interface TenantTema {
   color_background: string;
   color_surface: string;
   color_text: string;
-  logo_url: string | null;
 }
 
 export interface TenantConfig {
   slug: string;
   nombre: string;
   dominio: string;
+  logo_url: string | null;
   tema: TenantTema;
 }

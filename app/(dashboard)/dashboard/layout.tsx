@@ -36,7 +36,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center justify-between h-16">
             {/* Logo y Nav Desktop */}
             <div className="flex items-center space-x-8">
-              <h1 className="text-lg sm:text-xl font-bold" style={{ color: 'var(--tenant-primary)' }}>Aprobaciones</h1>
+              {tenant?.logo_url ? (
+                <img
+                  src={tenant.logo_url}
+                  alt={tenant.nombre}
+                  className="h-8 w-8 object-cover rounded-full"
+                />
+              ) : (
+                <h1 className="text-lg sm:text-xl font-bold" style={{ color: 'var(--tenant-primary)' }}>Aprobaciones</h1>
+              )}
               
               {/* Navigation Desktop */}
               <nav className="hidden md:flex space-x-4">

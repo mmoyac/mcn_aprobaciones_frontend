@@ -40,11 +40,21 @@ export default function LoginPage() {
         <div className="bg-slate-800 rounded-lg shadow-2xl p-8 border border-slate-700">
           {/* Logo y título */}
           <div className="text-center mb-8">
-            <div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-              style={{ background: 'linear-gradient(135deg, var(--tenant-secondary), var(--tenant-primary))' }}
-            >
-              <LogIn className="w-8 h-8 text-white" />
+            <div className="flex justify-center mb-4">
+              {tenant?.logo_url ? (
+                <img
+                  src={tenant.logo_url}
+                  alt={tenant.nombre}
+                  className="h-16 w-16 object-cover rounded-full"
+                />
+              ) : (
+                <div
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full"
+                  style={{ background: 'linear-gradient(135deg, var(--tenant-secondary), var(--tenant-primary))' }}
+                >
+                  <LogIn className="w-8 h-8 text-white" />
+                </div>
+              )}
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Aprobaciones</h1>
             {/* Badge del tenant */}

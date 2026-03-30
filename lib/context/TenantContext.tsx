@@ -62,9 +62,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       document.head.appendChild(faviconLink);
     }
 
-    if (tenant.tema.logo_url) {
+    if (tenant.logo_url) {
       faviconLink.type = 'image/x-icon';
-      faviconLink.href = tenant.tema.logo_url;
+      faviconLink.href = tenant.logo_url;
     } else {
       // Generar favicon SVG dinámico con la inicial del tenant y el color primario
       const inicial = tenant.nombre.charAt(0).toUpperCase();

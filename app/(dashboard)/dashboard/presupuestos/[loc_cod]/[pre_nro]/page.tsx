@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { ArrowLeft, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { formatCurrency } from '@/lib/utils';
-import { ItemPresupuesto, CostoItem } from '@/lib/types';
+import { ItemPresupuesto, CostoItem, type AprobacionPresupuesto } from '@/lib/types';
 
 const TIPO_BADGE: Record<number, { label: string; className: string }> = {
   1: { label: 'Material',         className: 'bg-slate-500/20 text-slate-300' },
@@ -16,6 +16,67 @@ const TIPO_BADGE: Record<number, { label: string; className: string }> = {
   5: { label: 'Margen',           className: 'bg-teal-500/20 text-teal-300' },
   6: { label: 'Descuento',        className: 'bg-red-500/20 text-red-300' },
 };
+
+function EtapaAprobacion({
+  label,
+  usuario,
+  fecha,
+  hora,
+}: {
+  label: string;
+  usuario: string | null;
+  fecha: string | null;
+  hora: string | null;
+}) {
+  const aprobada = !!usuario;
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${aprobada ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+          {aprobada && <span className="text-emerald-400 text-[10px]">✓</span>}
+        </div>
+        <span className="text-xs font-medium text-slate-300 truncate">{label}</span>
+      </div>
+      <div className="text-xs text-slate-400 space-y-0.5 pl-6">
+        <div>{usuario || '—'}</div>
+        <div>{fecha ? fecha.split('-').reverse().join('-') : '—'}</div>
+        <div>{hora || ''}</div>
+      </div>
+    </div>
+  );
+}
+
+function AprobacionesCard({ aprobaciones }: { aprobaciones: Partial<AprobacionPresupuesto> }) {
+  return (
+    <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
+      <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Flujo de Aprobaciones</h2>
+      <div className="flex gap-4 divide-x divide-slate-700">
+        <EtapaAprobacion
+          label="Liberación"
+          usuario={aprobaciones.pre_vblibusu ?? null}
+          fecha={aprobaciones.pre_vblibdt ?? null}
+          hora={aprobaciones.pre_vblibtime ?? null}
+        />
+        <div className="pl-4 flex-1 min-w-0">
+          <EtapaAprobacion
+            label="VB Gerente Operaciones"
+            usuario={aprobaciones.pre_vbusu ?? null}
+            fecha={aprobaciones.pre_vbfec ?? null}
+            hora={aprobaciones.pre_vbtime ?? null}
+          />
+        </div>
+        <div className="pl-4 flex-1 min-w-0">
+          <EtapaAprobacion
+            label="VB Gerente General"
+            usuario={aprobaciones.pre_vbggusu ?? null}
+            fecha={aprobaciones.pre_vbggdt ?? null}
+            hora={aprobaciones.pre_vbggtime ?? null}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CostosTable({ costos }: { costos: CostoItem[] }) {
   if (costos.length === 0) return <p className="text-slate-500 text-sm px-4 py-2">Sin costos registrados</p>;
@@ -136,6 +197,9 @@ export default function DetallePresupuestoPage() {
 
       {data && (
         <>
+          {/* Flujo de Aprobaciones */}
+          <AprobacionesCard aprobaciones={data.aprobaciones ?? {}} />
+
           {/* Vista Mobile: Cards */}
           <div className="lg:hidden space-y-3">
             {data.items.length === 0 ? (

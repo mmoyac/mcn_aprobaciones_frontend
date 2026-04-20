@@ -3,7 +3,8 @@ import {
     OrdenCompraIndicadores,
     OrdenCompraDetalle,
     OrdenCompraAprobar,
-    OrdenCompraAprobadoResponse
+    OrdenCompraAprobadoResponse,
+    DetalleOrdenCompra
 } from '@/lib/types';
 
 export const ordenesApi = {
@@ -34,6 +35,11 @@ export const ordenesApi = {
         const { data } = await apiClient.get<OrdenCompraDetalle[]>('/ordenes-compra/aprobadas', {
             params
         });
+        return data;
+    },
+
+    getDetalle: async (loc_cod: number, ocp_nro: number): Promise<DetalleOrdenCompra> => {
+        const { data } = await apiClient.get<DetalleOrdenCompra>(`/ordenes-compra/${loc_cod}/${ocp_nro}/detalle`);
         return data;
     },
 

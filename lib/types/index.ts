@@ -81,9 +81,22 @@ export interface ItemPresupuesto {
   costos: CostoItem[];
 }
 
+export interface AprobacionPresupuesto {
+  pre_vblibusu: string | null;
+  pre_vblibdt: string | null;
+  pre_vblibtime: string | null;
+  pre_vbusu: string | null;
+  pre_vbfec: string | null;
+  pre_vbtime: string | null;
+  pre_vbggusu: string | null;
+  pre_vbggdt: string | null;
+  pre_vbggtime: string | null;
+}
+
 export interface DetallePresupuesto {
   loc_cod: number;
   pre_nro: number;
+  aprobaciones: AprobacionPresupuesto;
   items: ItemPresupuesto[];
 }
 
@@ -127,6 +140,37 @@ export interface OrdenCompraDetalle {
   ocp_A2_Usu?: string;
   ocp_A2_Dt?: string;
   ocp_A2_Hr?: string;
+}
+
+export interface AprobacionOrdenCompra {
+  ocp_a4usu: string | null;
+  ocp_a4_dt: string | null;
+  ocp_a4_hr: string | null;
+  ocp_a3usu: string | null;
+  ocp_a3_dt: string | null;
+  ocp_a3_hr: string | null;
+  ocp_a2usu: string | null;
+  ocp_a2_dt: string | null;
+  ocp_a2_hr: string | null;
+  ocp_a1usu: string | null;
+  ocp_a1_dt: string | null;
+  ocp_a1_hr: string | null;
+}
+
+export interface DetalleOrdenCompra {
+  Loc_cod: number;
+  ocp_nro: number;
+  ocp_fec: string | null;
+  ocp_fee: string | null;
+  pro_rut: number;
+  proveedor_nombre: string;
+  ocp_pdt: string;
+  ocp_net: number;
+  ocp_iva: number;
+  ocp_ila: number;
+  monto_total: number;
+  loc_des: string | null;
+  aprobaciones: AprobacionOrdenCompra;
 }
 
 export interface OrdenCompraAprobar {

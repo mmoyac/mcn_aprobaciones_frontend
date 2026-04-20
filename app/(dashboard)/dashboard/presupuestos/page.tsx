@@ -190,9 +190,9 @@ export default function PresupuestosPage() {
     mutationFn: (data: { Loc_cod: number; pre_nro: number }) =>
       presupuestosApi.aprobar(data),
     onSuccess: () => {
-      // Invalidar queries para refrescar datos
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
       queryClient.invalidateQueries({ queryKey: ['indicadores'] });
+      queryClient.invalidateQueries({ queryKey: ['presupuesto-detalle'] });
       setSelectedPresupuesto(null);
     },
   });
@@ -202,9 +202,9 @@ export default function PresupuestosPage() {
     mutationFn: (data: { Loc_cod: number; pre_nro: number }) =>
       presupuestosApi.desaprobar(data),
     onSuccess: () => {
-      // Invalidar queries para refrescar datos
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
       queryClient.invalidateQueries({ queryKey: ['indicadores'] });
+      queryClient.invalidateQueries({ queryKey: ['presupuesto-detalle'] });
       setSelectedPresupuesto(null);
     },
   });
@@ -216,6 +216,7 @@ export default function PresupuestosPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
       queryClient.invalidateQueries({ queryKey: ['indicadores'] });
+      queryClient.invalidateQueries({ queryKey: ['presupuesto-detalle'] });
       setSelectedPresupuesto(null);
     },
   });

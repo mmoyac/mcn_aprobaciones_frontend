@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ordenesApi } from '@/lib/api/ordenes';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobadas';
@@ -35,6 +36,7 @@ export default function OrdenesCompraPage() {
   });
 
   const queryClient = useQueryClient();
+  const router = useRouter();
   const usuario = authApi.getUser();
 
   // Prevenir scroll del body cuando hay modal abierto
@@ -196,9 +198,9 @@ export default function OrdenesCompraPage() {
     mutationFn: (data: { Loc_cod: number; ocp_nro: number }) =>
       ordenesApi.aprobar(data),
     onSuccess: () => {
-      // Invalidar queries para refrescar datos
       queryClient.invalidateQueries({ queryKey: ['ordenes'] });
       queryClient.invalidateQueries({ queryKey: ['indicadores'] });
+      queryClient.invalidateQueries({ queryKey: ['orden-compra-detalle'] });
       setSelectedOrden(null);
     },
   });
@@ -208,9 +210,9 @@ export default function OrdenesCompraPage() {
     mutationFn: (data: { Loc_cod: number; ocp_nro: number }) =>
       ordenesApi.desaprobar(data),
     onSuccess: () => {
-      // Invalidar queries para refrescar datos
       queryClient.invalidateQueries({ queryKey: ['ordenes'] });
       queryClient.invalidateQueries({ queryKey: ['indicadores'] });
+      queryClient.invalidateQueries({ queryKey: ['orden-compra-detalle'] });
       setSelectedOrden(null);
     },
   });
@@ -352,7 +354,12 @@ export default function OrdenesCompraPage() {
                 {/* Cabecera Card */}
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <span className="text-xs text-slate-500 font-mono">#{orden.ocp_nro}</span>
+                    <Link
+                      href={`/dashboard/ordenes-compra/${orden.Loc_cod}/${orden.ocp_nro}`}
+                      className="text-xs text-slate-500 font-mono hover:text-teal-400 transition-colors flex items-center gap-1"
+                    >
+                      #{orden.ocp_nro} <ChevronRight size={12} />
+                    </Link>
                     <h3 className="text-white font-medium text-lg leading-tight mt-1">
                       {orden.proveedor_nombre}
                     </h3>
@@ -434,8 +441,16 @@ export default function OrdenesCompraPage() {
                 )}
 
                 {/* Botones de acción */}
+                <Link
+                  href={`/dashboard/ordenes-compra/${orden.Loc_cod}/${orden.ocp_nro}`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 mt-4 bg-slate-700 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-600 rounded-lg font-medium transition-colors text-sm"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Ver Detalle
+                </Link>
+
                 {activeTab === 'pendientes' && (
-                  <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700/50">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'aprobar')}
                       className="flex-1 flex items-center justify-center gap-2 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-md transition-colors font-medium"
@@ -447,7 +462,7 @@ export default function OrdenesCompraPage() {
                 )}
 
                 {activeTab === 'aprobadas' && (
-                  <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700/50">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'desaprobar')}
                       className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors font-medium"
@@ -515,7 +530,12 @@ export default function OrdenesCompraPage() {
                       className="hover:bg-slate-700/50 transition-colors"
                     >
                       <td className="px-3 py-3 text-white font-medium whitespace-nowrap">
-                        {orden.ocp_nro}
+                        <Link
+                          href={`/dashboard/ordenes-compra/${orden.Loc_cod}/${orden.ocp_nro}`}
+                          className="hover:text-teal-400 transition-colors"
+                        >
+                          {orden.ocp_nro}
+                        </Link>
                       </td>
                       <td className="px-3 py-3 text-slate-300 whitespace-nowrap">
                         {formatDate(orden.ocp_fec)}
@@ -577,13 +597,22 @@ export default function OrdenesCompraPage() {
                       </td>
                       {activeTab === 'pendientes' && (
                         <td className="px-3 py-3 text-center">
-                          <button
-                            onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'aprobar')}
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 hover:bg-teal-700 text-white transition-colors"
-                            title="Aprobar"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
+                          <div className="flex gap-1 justify-center">
+                            <Link
+                              href={`/dashboard/ordenes-compra/${orden.Loc_cod}/${orden.ocp_nro}`}
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+                              title="Ver detalle"
+                            >
+                              <ClipboardList className="w-3.5 h-3.5" />
+                            </Link>
+                            <button
+                              onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'aprobar')}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 hover:bg-teal-700 text-white transition-colors"
+                              title="Aprobar"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       )}
                       {activeTab === 'aprobadas' && (
@@ -596,13 +625,22 @@ export default function OrdenesCompraPage() {
                             {orden.ocp_A2_Dt ? formatDate(orden.ocp_A2_Dt) : '-'}
                           </td>
                           <td className="px-3 py-3 text-center">
-                            <button
-                              onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'desaprobar')}
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 border border-red-600/30 transition-colors"
-                              title="Deshacer aprobación"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
+                            <div className="flex gap-1 justify-center">
+                              <Link
+                                href={`/dashboard/ordenes-compra/${orden.Loc_cod}/${orden.ocp_nro}`}
+                                className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+                                title="Ver detalle"
+                              >
+                                <ClipboardList className="w-3.5 h-3.5" />
+                              </Link>
+                              <button
+                                onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'desaprobar')}
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 border border-red-600/30 transition-colors"
+                                title="Deshacer aprobación"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </>
                       )}

@@ -1,9 +1,10 @@
-const CACHE_NAME = 'gontec-aprobaciones-v1';
+// El tenant se pasa como query param al registrar el SW: /sw.js?tenant=mga
+const urlParams = new URLSearchParams(self.location.search);
+const tenant = urlParams.get('tenant') || 'aprobaciones';
+const CACHE_NAME = `${tenant}-aprobaciones-v1`;
 const urlsToCache = [
   '/',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/api/manifest',
 ];
 
 self.addEventListener('install', (event) => {

@@ -10,7 +10,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
-type Tab = 'pendientes' | 'aprobadas';
+type Tab = 'pendientes' | 'aprobados';
 
 export default function OrdenesCompraPage() {
   const searchParams = useSearchParams();
@@ -151,7 +151,7 @@ export default function OrdenesCompraPage() {
 
   // Efecto para sincronizar el tab con la URL
   useEffect(() => {
-    if (tabParam && (tabParam === 'pendientes' || tabParam === 'aprobadas')) {
+    if (tabParam && (tabParam === 'pendientes' || tabParam === 'aprobados')) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -167,7 +167,7 @@ export default function OrdenesCompraPage() {
   const { data: aprobadas, isLoading: isLoadingAprobadas } = useQuery({
     queryKey: ['ordenes', 'aprobadas'],
     queryFn: () => ordenesApi.getAprobadas(), // Sin parámetros = solo las de hoy
-    enabled: activeTab === 'aprobadas',
+    enabled: activeTab === 'aprobados',
   });
 
   // Función para cerrar modal PDF
@@ -285,12 +285,12 @@ export default function OrdenesCompraPage() {
           Pendientes
         </button>
         <button
-          onClick={() => setActiveTab('aprobadas')}
-          className={`px-6 py-3 font-medium transition-colors ${activeTab === 'aprobadas'
+          onClick={() => setActiveTab('aprobados')}
+          className={`px-6 py-3 font-medium transition-colors ${activeTab === 'aprobados'
             ? 'border-b-2'
             : 'text-slate-400 hover:text-slate-300'
             }`}
-          style={activeTab === 'aprobadas' ? { color: 'var(--tenant-primary)', borderColor: 'var(--tenant-primary)' } : {}}
+          style={activeTab === 'aprobados' ? { color: 'var(--tenant-primary)', borderColor: 'var(--tenant-primary)' } : {}}
         >
           Aprobadas Hoy
         </button>
@@ -425,7 +425,7 @@ export default function OrdenesCompraPage() {
                   </div>
                 </div>
 
-                {activeTab === 'aprobadas' && (
+                {activeTab === 'aprobados' && (
                   <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-700/50 bg-slate-700/10 -mx-2 px-2 pb-1 rounded-b-lg">
                     <div>
                       <span className="block text-xs text-teal-500/80 mb-0.5 font-medium">Aprobado por</span>
@@ -461,7 +461,7 @@ export default function OrdenesCompraPage() {
                   </div>
                 )}
 
-                {activeTab === 'aprobadas' && (
+                {activeTab === 'aprobados' && (
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAction(orden.Loc_cod, orden.ocp_nro, 'desaprobar')}
@@ -508,7 +508,7 @@ export default function OrdenesCompraPage() {
                         Acción
                       </th>
                     )}
-                    {activeTab === 'aprobadas' && (
+                    {activeTab === 'aprobados' && (
                       <>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                           Aprobado Por
@@ -615,7 +615,7 @@ export default function OrdenesCompraPage() {
                           </div>
                         </td>
                       )}
-                      {activeTab === 'aprobadas' && (
+                      {activeTab === 'aprobados' && (
                         <>
                           <td className="px-3 py-3 text-slate-300">
                             <span className="text-white font-medium block">{orden.ocp_A2_Usu}</span>

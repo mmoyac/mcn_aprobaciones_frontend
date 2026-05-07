@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
 import { useTenant } from '@/lib/context/TenantContext';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
+
+const CREDS_KEY = 'mcn_saved_creds';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +18,20 @@ export default function LoginPage() {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(CREDS_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(atob(saved));
+        setCredentials({ usuario: parsed.usuario, password: parsed.password });
+        setRememberMe(true);
+      } catch {
+        localStorage.removeItem(CREDS_KEY);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +40,11 @@ export default function LoginPage() {
 
     try {
       await authApi.login(credentials);
+      if (rememberMe) {
+        localStorage.setItem(CREDS_KEY, btoa(JSON.stringify(credentials)));
+      } else {
+        localStorage.removeItem(CREDS_KEY);
+      }
       // Pequeña pausa para que la cookie se propague antes de la navegación
       await new Promise(resolve => setTimeout(resolve, 50));
       router.replace('/dashboard');
@@ -119,6 +140,16 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-teal-500 cursor-pointer"
+              />
+              <span className="text-sm text-slate-400">Recordar mis datos</span>
+            </label>
+
             <button
               type="submit"
               disabled={loading}
@@ -131,8 +162,16 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-slate-500 text-sm mt-6">
-          Sistema de gestión de aprobaciones
+        <p className="text-center text-slate-600 text-xs mt-6">
+          © 2026 Desarrollado por{' '}
+          <a
+            href="https://lexasconsultores.cl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2"
+          >
+            Lexas Consultores
+          </a>
         </p>
       </div>
     </div>

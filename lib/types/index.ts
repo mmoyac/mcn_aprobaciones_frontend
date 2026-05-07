@@ -184,6 +184,21 @@ export interface OrdenCompraAprobadoResponse {
   new_status: string;
 }
 
+export interface ItemOrdenCompra {
+  Loc_cod: number;
+  ocp_nro: number;
+  ocp_lin: number;
+  ocp_mat: string | null;
+  mat_des: string | null;
+  Ocp_Odt: number | null;
+  Ocp_De1: string | null;
+  Ocp_De2: string | null;
+  Ocp_De3: string | null;
+  Ocp_est: string | null;
+  Ocp_can: number | null;
+  Ocp_pre: number | null;
+}
+
 // Tipos para usuarios
 export interface Usuario {
   UserCd: string;

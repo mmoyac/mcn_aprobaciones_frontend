@@ -338,15 +338,13 @@ server {
 # Hacer cambios en el código
 git add .
 git commit -m "feat: nueva funcionalidad"
-git push
+git push origin main
 
-# Crear tag de versión
-git tag -a v1.0.9 -m "Descripción de cambios"
-git push origin v1.0.9
-
-# El workflow se ejecuta automáticamente
+# El workflow se ejecuta automáticamente al hacer push a main
 # Monitorear en: https://github.com/mmoyac/mcn_aprobaciones_frontend/actions
 ```
+
+> **Nota:** No se requiere crear tags para desplegar. Cualquier push a `main` dispara el workflow de CI/CD.
 
 ### 5.4. Troubleshooting Deployment
 

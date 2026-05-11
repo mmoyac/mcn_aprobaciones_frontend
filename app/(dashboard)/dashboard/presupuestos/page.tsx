@@ -7,10 +7,55 @@ import Link from 'next/link';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Ban, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
+import { CheckCircle, XCircle, Ban, Loader2, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobados';
+
+function StepIcon({ done, tooltip }: { done: boolean; tooltip: string }) {
+  return (
+    <div
+      title={tooltip}
+      className={`w-5 h-5 rounded flex items-center justify-center cursor-default flex-shrink-0 ${
+        done
+          ? 'bg-emerald-500/20 border border-emerald-500/50'
+          : 'bg-slate-700 border border-slate-600'
+      }`}
+    >
+      {done ? (
+        <span className="text-emerald-400 text-[10px] leading-none">✓</span>
+      ) : (
+        <span className="text-slate-600 text-[8px] leading-none">●</span>
+      )}
+    </div>
+  );
+}
+
+function AprobacionesMini({
+  Pre_vbLib, pre_VbLibUsu,
+  pre_vb, pre_VbUsu,
+  pre_vbgg, pre_vbggUsu,
+}: {
+  Pre_vbLib: number;
+  pre_VbLibUsu?: string | null;
+  pre_vb?: number | null;
+  pre_VbUsu?: string | null;
+  pre_vbgg: number;
+  pre_vbggUsu?: string | null;
+}) {
+  const libUsu = pre_VbLibUsu?.trim();
+  const vboUsu = pre_VbUsu?.trim();
+  const vbgUsu = pre_vbggUsu?.trim();
+  return (
+    <div className="flex items-center gap-1">
+      <StepIcon done={Pre_vbLib === 1} tooltip={`Liberación${libUsu ? `: ${libUsu}` : ''}`} />
+      <div className="w-2 h-px bg-slate-600 flex-shrink-0" />
+      <StepIcon done={(pre_vb ?? 0) === 1} tooltip={`VB Gte. Operaciones${vboUsu ? `: ${vboUsu}` : ''}`} />
+      <div className="w-2 h-px bg-slate-600 flex-shrink-0" />
+      <StepIcon done={pre_vbgg === 1} tooltip={`VB Gte. General${vbgUsu ? `: ${vbgUsu}` : ''}`} />
+    </div>
+  );
+}
 
 export default function PresupuestosPage() {
   const searchParams = useSearchParams();
@@ -403,7 +448,36 @@ export default function PresupuestosPage() {
                     <p className="truncate">{presupuesto.pre_ref || '-'}</p>
                   </div>
 
-
+                  <div className="col-span-2 pt-2.5 border-t border-slate-700/50">
+                    <span className="block text-xs text-slate-500 mb-2">Flujo aprobaciones</span>
+                    <div className="flex items-center gap-1 mb-1.5">
+                      <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${presupuesto.Pre_vbLib === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                        {presupuesto.Pre_vbLib === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                      </div>
+                      <div className="flex-1 h-px bg-slate-600" />
+                      <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${(presupuesto.pre_vb ?? 0) === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                        {(presupuesto.pre_vb ?? 0) === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                      </div>
+                      <div className="flex-1 h-px bg-slate-600" />
+                      <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${presupuesto.pre_vbgg === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                        {presupuesto.pre_vbgg === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 text-[9px]">
+                      <div>
+                        <span className="text-slate-500 block">Liberación</span>
+                        <span className="text-slate-400">{presupuesto.pre_VbLibUsu?.trim() || '—'}</span>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-slate-500 block">VB Oper.</span>
+                        <span className="text-slate-400">{presupuesto.pre_VbUsu?.trim() || '—'}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-slate-500 block">VB Gerencia</span>
+                        <span className="text-slate-400">{presupuesto.pre_vbggUsu?.trim() || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
 
                   {activeTab === 'aprobados' && (
                     <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 pt-3 border-t border-slate-700/50 bg-slate-700/10 -mx-2 px-2 pb-1 rounded-b-lg">
@@ -528,6 +602,9 @@ export default function PresupuestosPage() {
                     <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Estado
                     </th>
+                    <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      Flujo
+                    </th>
                     <th className="px-3 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Neto
                     </th>
@@ -590,6 +667,18 @@ export default function PresupuestosPage() {
                             default: return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">Sin Asig.</span>;
                           }
                         })()}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-center">
+                          <AprobacionesMini
+                            Pre_vbLib={presupuesto.Pre_vbLib}
+                            pre_VbLibUsu={presupuesto.pre_VbLibUsu}
+                            pre_vb={presupuesto.pre_vb}
+                            pre_VbUsu={presupuesto.pre_VbUsu}
+                            pre_vbgg={presupuesto.pre_vbgg}
+                            pre_vbggUsu={presupuesto.pre_vbggUsu}
+                          />
+                        </div>
                       </td>
                       <td className="px-3 py-3 text-right text-white font-semibold whitespace-nowrap">
                         {formatCurrency(presupuesto.Pre_Neto)}

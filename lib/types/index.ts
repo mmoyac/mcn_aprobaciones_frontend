@@ -34,6 +34,9 @@ export interface PresupuestoDetalle {
   pre_ref: string;
   pre_VbLibUsu?: string;
   Pre_VBLibDt?: string;
+  pre_vb?: number;
+  pre_VbUsu?: string;
+  pre_VbFec?: string;
   pre_vbggUsu?: string;
   pre_vbggDt?: string;
   pre_trnFec: string;
@@ -137,9 +140,16 @@ export interface OrdenCompraDetalle {
   monto_total: number;
   tienepdf?: number;
   loc_des?: string | null;
+  ocp_A4_Ap?: number;
+  ocp_A4_Usu?: string;
+  ocp_A3_Anu?: number;
+  ocp_A3_Usu?: string;
+  ocp_A2_Ap?: number;
   ocp_A2_Usu?: string;
   ocp_A2_Dt?: string;
   ocp_A2_Hr?: string;
+  ocp_A1_Ap?: number;
+  ocp_A1_Usu?: string;
 }
 
 export interface AprobacionOrdenCompra {

@@ -7,10 +7,61 @@ import Link from 'next/link';
 import { ordenesApi } from '@/lib/api/ordenes';
 import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, FileText, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 type Tab = 'pendientes' | 'aprobados';
+
+function StepIcon({ done, tooltip }: { done: boolean; tooltip: string }) {
+  return (
+    <div
+      title={tooltip}
+      className={`w-5 h-5 rounded flex items-center justify-center cursor-default flex-shrink-0 ${
+        done
+          ? 'bg-emerald-500/20 border border-emerald-500/50'
+          : 'bg-slate-700 border border-slate-600'
+      }`}
+    >
+      {done ? (
+        <span className="text-emerald-400 text-[10px] leading-none">✓</span>
+      ) : (
+        <span className="text-slate-600 text-[8px] leading-none">●</span>
+      )}
+    </div>
+  );
+}
+
+function AprobacionesMiniOC({
+  ocp_A4_Ap, ocp_A4_Usu,
+  ocp_A3_Anu, ocp_A3_Usu,
+  ocp_A2_Ap, ocp_A2_Usu,
+  ocp_A1_Ap, ocp_A1_Usu,
+}: {
+  ocp_A4_Ap?: number | null;
+  ocp_A4_Usu?: string | null;
+  ocp_A3_Anu?: number | null;
+  ocp_A3_Usu?: string | null;
+  ocp_A2_Ap?: number | null;
+  ocp_A2_Usu?: string | null;
+  ocp_A1_Ap?: number | null;
+  ocp_A1_Usu?: string | null;
+}) {
+  const a4u = ocp_A4_Usu?.trim();
+  const a3u = ocp_A3_Usu?.trim();
+  const a2u = ocp_A2_Usu?.trim();
+  const a1u = ocp_A1_Usu?.trim();
+  return (
+    <div className="flex items-center gap-1">
+      <StepIcon done={(ocp_A4_Ap ?? 0) === 1} tooltip={`VB Técnico${a4u ? `: ${a4u}` : ''}`} />
+      <div className="w-2 h-px bg-slate-600 flex-shrink-0" />
+      <StepIcon done={(ocp_A3_Anu ?? 0) === 1} tooltip={`VB Contabilidad${a3u ? `: ${a3u}` : ''}`} />
+      <div className="w-2 h-px bg-slate-600 flex-shrink-0" />
+      <StepIcon done={(ocp_A2_Ap ?? 0) === 1} tooltip={`VB Operaciones${a2u ? `: ${a2u}` : ''}`} />
+      <div className="w-2 h-px bg-slate-600 flex-shrink-0" />
+      <StepIcon done={(ocp_A1_Ap ?? 0) === 1} tooltip={`VB Gte. General${a1u ? `: ${a1u}` : ''}`} />
+    </div>
+  );
+}
 
 export default function OrdenesCompraPage() {
   const searchParams = useSearchParams();
@@ -425,11 +476,51 @@ export default function OrdenesCompraPage() {
                   </div>
                 </div>
 
+                {/* Flujo de Aprobaciones */}
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <span className="block text-xs text-slate-500 mb-2">Flujo aprobaciones</span>
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${(orden.ocp_A4_Ap ?? 0) === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                      {(orden.ocp_A4_Ap ?? 0) === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                    </div>
+                    <div className="flex-1 h-px bg-slate-600" />
+                    <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${(orden.ocp_A3_Anu ?? 0) === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                      {(orden.ocp_A3_Anu ?? 0) === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                    </div>
+                    <div className="flex-1 h-px bg-slate-600" />
+                    <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${(orden.ocp_A2_Ap ?? 0) === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                      {(orden.ocp_A2_Ap ?? 0) === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                    </div>
+                    <div className="flex-1 h-px bg-slate-600" />
+                    <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${(orden.ocp_A1_Ap ?? 0) === 1 ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-slate-700 border border-slate-600'}`}>
+                      {(orden.ocp_A1_Ap ?? 0) === 1 ? <span className="text-emerald-400 text-xs">✓</span> : <span className="text-slate-600 text-[8px]">●</span>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 text-[9px]">
+                    <div>
+                      <span className="text-slate-500 block">VB Téc.</span>
+                      <span className="text-slate-400">{orden.ocp_A4_Usu?.trim() || '—'}</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-slate-500 block">VB Cont.</span>
+                      <span className="text-slate-400">{orden.ocp_A3_Usu?.trim() || '—'}</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-slate-500 block">VB Oper.</span>
+                      <span className="text-slate-400">{orden.ocp_A2_Usu?.trim() || '—'}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-slate-500 block">VB GGral</span>
+                      <span className="text-slate-400">{orden.ocp_A1_Usu?.trim() || '—'}</span>
+                    </div>
+                  </div>
+                </div>
+
                 {activeTab === 'aprobados' && (
                   <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-700/50 bg-slate-700/10 -mx-2 px-2 pb-1 rounded-b-lg">
                     <div>
                       <span className="block text-xs text-teal-500/80 mb-0.5 font-medium">Aprobado por</span>
-                      <span className="text-sm font-semibold text-teal-100">{orden.ocp_A2_Usu}</span>
+                      <span className="text-sm font-semibold text-teal-100">{orden.ocp_A1_Usu}</span>
                     </div>
                     <div className="text-right">
                       <span className="block text-xs text-teal-500/80 mb-0.5 font-medium">Fecha Aprobación</span>
@@ -497,6 +588,9 @@ export default function OrdenesCompraPage() {
                     <th className="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       Estado
                     </th>
+                    <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      Flujo
+                    </th>
                     <th className="px-3 py-3 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       PDF
                     </th>
@@ -556,6 +650,20 @@ export default function OrdenesCompraPage() {
                             default: return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400">{est || 'Sin Estado'}</span>;
                           }
                         })()}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-center">
+                          <AprobacionesMiniOC
+                            ocp_A4_Ap={orden.ocp_A4_Ap}
+                            ocp_A4_Usu={orden.ocp_A4_Usu}
+                            ocp_A3_Anu={orden.ocp_A3_Anu}
+                            ocp_A3_Usu={orden.ocp_A3_Usu}
+                            ocp_A2_Ap={orden.ocp_A2_Ap}
+                            ocp_A2_Usu={orden.ocp_A2_Usu}
+                            ocp_A1_Ap={orden.ocp_A1_Ap}
+                            ocp_A1_Usu={orden.ocp_A1_Usu}
+                          />
+                        </div>
                       </td>
                       <td className="px-3 py-3 text-center">
                         {orden.tienepdf === 1 ? (
@@ -618,7 +726,7 @@ export default function OrdenesCompraPage() {
                       {activeTab === 'aprobados' && (
                         <>
                           <td className="px-3 py-3 text-slate-300">
-                            <span className="text-white font-medium block">{orden.ocp_A2_Usu}</span>
+                            <span className="text-white font-medium block">{orden.ocp_A1_Usu}</span>
                             {orden.ocp_A2_Hr && <span className="text-xs text-slate-500">{orden.ocp_A2_Hr}</span>}
                           </td>
                           <td className="px-3 py-3 text-slate-300 whitespace-nowrap">

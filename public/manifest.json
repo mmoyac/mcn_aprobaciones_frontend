@@ -1,7 +1,7 @@
 {
-  "name": "GONTEC Aprobaciones",
-  "short_name": "GONTEC",
-  "description": "Panel de aprobaciones GONTEC",
+  "name": "Aprobaciones",
+  "short_name": "Aprob.",
+  "description": "Panel de aprobaciones",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -9,14 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/api/icon",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/api/icon",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

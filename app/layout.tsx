@@ -27,13 +27,14 @@ export const metadata: Metadata = {
   description: "Panel de aprobaciones - Presupuestos y Órdenes de Compra",
   manifest: "/api/manifest",
   icons: {
+    // Iconos dinámicos por tenant: las rutas /api/* derivan el tenant del Host
+    // y devuelven el logo o un SVG con la inicial y colores del tenant.
+    // No usar PNGs estáticos en /public porque están marcados con un tenant fijo.
     icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }
+      { url: "/api/icon", type: "image/svg+xml" },
     ],
     apple: "/api/apple-touch-icon",
-    shortcut: "/favicon-32x32.png",
+    shortcut: "/api/icon",
   },
   appleWebApp: {
     capable: true,

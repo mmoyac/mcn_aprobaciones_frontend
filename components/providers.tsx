@@ -12,6 +12,11 @@ export function Providers({ children }: { children: ReactNode }) {
           queries: {
             staleTime: 60 * 1000, // 1 minuto
             refetchOnWindowFocus: false,
+            // 1 reintento (en vez del default 3): si una sección falla (ej. BD del
+            // tenant incompleta → 500), no dejamos el dashboard "colgado" ~7s con
+            // backoff exponencial antes de mostrar el error. Ver SPEC-002.
+            retry: 1,
+            retryDelay: 800,
           },
         },
       })

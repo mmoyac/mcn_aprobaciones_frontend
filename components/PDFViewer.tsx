@@ -3,19 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import { Download, ExternalLink, Smartphone, Monitor } from 'lucide-react';
 
-interface PDFViewerProps {
+// El número puede ser entero (órdenes, la mayoría de los presupuestos) o texto (presupuestos de mcn).
+interface PDFViewerProps<T extends number | string> {
   pdfUrl: string;
   title: string;
-  numeroDocumento: number;
-  onDownload: (numero: number) => void;
+  numeroDocumento: T;
+  onDownload: (numero: T) => void;
 }
 
-export default function PDFViewer({ 
+export default function PDFViewer<T extends number | string>({ 
   pdfUrl, 
   title, 
   numeroDocumento, 
   onDownload 
-}: PDFViewerProps) {
+}: PDFViewerProps<T>) {
   const [isAndroid, setIsAndroid] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

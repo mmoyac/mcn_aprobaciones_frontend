@@ -8,6 +8,7 @@ import {
   PresupuestoAprobadoResponse,
   DetallePresupuesto,
   PresupuestoHistorico,
+  PreNro,
 } from '../types';
 
 export const presupuestosApi = {
@@ -72,19 +73,19 @@ export const presupuestosApi = {
     return data;
   },
 
-  getDetalle: async (loc_cod: number, pre_nro: number): Promise<DetallePresupuesto> => {
+  getDetalle: async (loc_cod: number, pre_nro: PreNro): Promise<DetallePresupuesto> => {
     const { data } = await apiClient.get<DetallePresupuesto>(
-      `/presupuestos/${loc_cod}/${pre_nro}/detalle`
+      `/presupuestos/${loc_cod}/${encodeURIComponent(String(pre_nro))}/detalle`
     );
     return data;
   },
 
-  getPDF: async (numeroPresupuesto: number, locCod: number): Promise<Blob> => {
+  getPDF: async (numeroPresupuesto: PreNro, locCod: number): Promise<Blob> => {
     try {
       // Intentar primero con proxy interno de Next.js para evitar problemas de CORS
       console.log('Fetching PDF via Next.js proxy for presupuesto:', numeroPresupuesto);
       
-      const proxyResponse = await fetch(`/api/pdf?tipo=1&numero=${numeroPresupuesto}&loc_cod=${locCod}`, {
+      const proxyResponse = await fetch(`/api/pdf?tipo=1&numero=${encodeURIComponent(String(numeroPresupuesto))}&loc_cod=${locCod}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/pdf',

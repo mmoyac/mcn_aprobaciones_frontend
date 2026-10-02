@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, Loader2, ClipboardList, Eye, Download, Share2, AlertTriangle, FileX, X } from 'lucide-react';
 import { presupuestosApi } from '@/lib/api/presupuestos';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { PresupuestoHistorico } from '@/lib/types';
+import { PresupuestoHistorico, PreNro } from '@/lib/types';
 import PDFViewer from '@/components/PDFViewer';
 
 function BadgeEstado({ est }: { est: string }) {
@@ -60,7 +60,7 @@ export default function HistoricoPage() {
 
   const [pdfModal, setPdfModal] = useState<{
     isOpen: boolean;
-    pre_nro: number | null;
+    pre_nro: PreNro | null;
     loc_cod: number | null;
     pdfUrl: string | null;
     isLoading: boolean;
@@ -82,7 +82,7 @@ export default function HistoricoPage() {
     if (e.key === 'Enter') handleBuscar();
   };
 
-  const openPdf = async (pre_nro: number, loc_cod: number) => {
+  const openPdf = async (pre_nro: PreNro, loc_cod: number) => {
     setPdfModal({ isOpen: true, pre_nro, loc_cod, pdfUrl: null, isLoading: true });
     try {
       const blob = await presupuestosApi.getPDF(pre_nro, loc_cod);
@@ -93,7 +93,7 @@ export default function HistoricoPage() {
     }
   };
 
-  const downloadPdf = async (pre_nro: number, loc_cod: number) => {
+  const downloadPdf = async (pre_nro: PreNro, loc_cod: number) => {
     try {
       const blob = await presupuestosApi.getPDF(pre_nro, loc_cod);
       const url = URL.createObjectURL(blob);
@@ -106,7 +106,7 @@ export default function HistoricoPage() {
     }
   };
 
-  const sharePdf = async (pre_nro: number, loc_cod: number) => {
+  const sharePdf = async (pre_nro: PreNro, loc_cod: number) => {
     try {
       const blob = await presupuestosApi.getPDF(pre_nro, loc_cod);
       const file = new File([blob], `presupuesto-${pre_nro}.pdf`, { type: 'application/pdf' });
@@ -204,7 +204,7 @@ export default function HistoricoPage() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <Link
-                      href={`/dashboard/presupuestos/${p.Loc_cod}/${p.pre_nro}`}
+                      href={`/dashboard/presupuestos/${p.Loc_cod}/${encodeURIComponent(String(p.pre_nro))}`}
                       className="text-sm font-mono text-slate-400 hover:text-teal-400 transition-colors flex items-center gap-1"
                     >
                       #{p.pre_nro} <ClipboardList size={12} />
@@ -224,7 +224,7 @@ export default function HistoricoPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/dashboard/presupuestos/${p.Loc_cod}/${p.pre_nro}`}
+                      href={`/dashboard/presupuestos/${p.Loc_cod}/${encodeURIComponent(String(p.pre_nro))}`}
                       className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
                       title="Ver detalle"
                     >
@@ -278,7 +278,7 @@ export default function HistoricoPage() {
                     </td>
                     <td className="px-3 py-3 text-center">
                       <Link
-                        href={`/dashboard/presupuestos/${p.Loc_cod}/${p.pre_nro}`}
+                        href={`/dashboard/presupuestos/${p.Loc_cod}/${encodeURIComponent(String(p.pre_nro))}`}
                         className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
                         title="Ver detalle"
                       >
@@ -327,7 +327,7 @@ export default function HistoricoPage() {
                 <PDFViewer
                   pdfUrl={pdfModal.pdfUrl}
                   title={`Presupuesto ${pdfModal.pre_nro}`}
-                  numeroDocumento={pdfModal.pre_nro || 0}
+                  numeroDocumento={pdfModal.pre_nro ?? 0}
                   onDownload={(num) => downloadPdf(num, pdfModal.loc_cod ?? 0)}
                 />
               ) : (

@@ -12,6 +12,9 @@ export interface LoginResponse {
 }
 
 // Tipos para presupuestos
+// Número de presupuesto: entero en la mayoría de los ERP, texto "NNNNN-AAAA-V" en otros (mcn).
+export type PreNro = number | string;
+
 export interface PresupuestoIndicadores {
   pendientes: number;
   aprobados: number;
@@ -19,7 +22,7 @@ export interface PresupuestoIndicadores {
 
 export interface PresupuestoDetalle {
   Loc_cod: number;
-  pre_nro: number;
+  pre_nro: PreNro;
   pre_est: string;
   pre_fec: string;
   pre_rut: number;
@@ -47,14 +50,14 @@ export interface PresupuestoDetalle {
 
 export interface PresupuestoAprobar {
   Loc_cod: number;
-  pre_nro: number;
+  pre_nro: PreNro;
 }
 
 export interface PresupuestoAprobadoResponse {
   success: boolean;
   message: string;
   Loc_cod: number;
-  pre_nro: number;
+  pre_nro: PreNro;
   pre_vbggUsu: string;
   pre_vbggDt: string;
   pre_vbggTime: string;
@@ -98,14 +101,14 @@ export interface AprobacionPresupuesto {
 
 export interface DetallePresupuesto {
   loc_cod: number;
-  pre_nro: number;
+  pre_nro: PreNro;
   aprobaciones: AprobacionPresupuesto;
   items: ItemPresupuesto[];
 }
 
 export interface PresupuestoHistorico {
   Loc_cod: number;
-  pre_nro: number;
+  pre_nro: PreNro;
   pre_fec: string;
   pre_rut: number;
   cliente_nombre: string;

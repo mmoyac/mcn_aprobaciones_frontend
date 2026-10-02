@@ -147,11 +147,20 @@ function ItemCard({ item }: { item: ItemPresupuesto }) {
   );
 }
 
+function decodeParam(valor: string): string {
+  try {
+    return decodeURIComponent(valor);
+  } catch {
+    return valor;
+  }
+}
+
 export default function DetallePresupuestoPage() {
   const params = useParams();
   const router = useRouter();
   const loc_cod = Number(params.loc_cod);
-  const pre_nro = Number(params.pre_nro);
+  // pre_nro puede ser alfanumérico (ej. 06798-2026-0): no convertir a número.
+  const pre_nro = decodeParam(String(params.pre_nro));
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['presupuesto-detalle', loc_cod, pre_nro],

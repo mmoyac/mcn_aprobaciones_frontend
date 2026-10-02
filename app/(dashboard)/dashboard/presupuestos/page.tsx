@@ -9,6 +9,7 @@ import { authApi } from '@/lib/api/auth';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { CheckCircle, XCircle, Ban, Loader2, FileX, Eye, Download, X, AlertTriangle, Share2, ChevronRight, ClipboardList } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
+import type { PreNro } from '@/lib/types';
 
 type Tab = 'pendientes' | 'aprobados';
 
@@ -63,12 +64,12 @@ export default function PresupuestosPage() {
   const [activeTab, setActiveTab] = useState<Tab>(tabParam || 'pendientes');
   const [selectedPresupuesto, setSelectedPresupuesto] = useState<{
     Loc_cod: number;
-    pre_nro: number;
+    pre_nro: PreNro;
   } | null>(null);
 
   const [pdfModal, setPdfModal] = useState<{
     isOpen: boolean;
-    numeroPresupuesto: number | null;
+    numeroPresupuesto: PreNro | null;
     locCod: number | null;
     pdfUrl: string | null;
     isLoading: boolean;
@@ -101,7 +102,7 @@ export default function PresupuestosPage() {
   }, [selectedPresupuesto, pdfModal.isOpen]);
 
   // Función para abrir PDF
-  const handleViewPDF = async (numeroPresupuesto: number, locCod: number) => {
+  const handleViewPDF = async (numeroPresupuesto: PreNro, locCod: number) => {
     setPdfModal(prev => ({
       ...prev,
       isOpen: true,
@@ -131,7 +132,7 @@ export default function PresupuestosPage() {
   };
 
   // Función para descargar PDF
-  const handleDownloadPDF = async (numeroPresupuesto: number, locCod: number) => {
+  const handleDownloadPDF = async (numeroPresupuesto: PreNro, locCod: number) => {
     try {
       const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto, locCod);
       const url = URL.createObjectURL(pdfBlob);
@@ -149,7 +150,7 @@ export default function PresupuestosPage() {
   };
 
   // Función para compartir PDF (Web Share API)
-  const handleSharePDF = async (numeroPresupuesto: number, locCod: number) => {
+  const handleSharePDF = async (numeroPresupuesto: PreNro, locCod: number) => {
     try {
       const pdfBlob = await presupuestosApi.getPDF(numeroPresupuesto, locCod);
       const file = new File([pdfBlob], `presupuesto-${numeroPresupuesto}.pdf`, { type: 'application/pdf' });
@@ -232,7 +233,7 @@ export default function PresupuestosPage() {
 
   // Mutation para aprobar presupuesto
   const aprobarMutation = useMutation({
-    mutationFn: (data: { Loc_cod: number; pre_nro: number }) =>
+    mutationFn: (data: { Loc_cod: number; pre_nro: PreNro }) =>
       presupuestosApi.aprobar(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
@@ -244,7 +245,7 @@ export default function PresupuestosPage() {
 
   // Mutation para desaprobar presupuesto
   const desaprobarMutation = useMutation({
-    mutationFn: (data: { Loc_cod: number; pre_nro: number }) =>
+    mutationFn: (data: { Loc_cod: number; pre_nro: PreNro }) =>
       presupuestosApi.desaprobar(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
@@ -256,7 +257,7 @@ export default function PresupuestosPage() {
 
   // Mutation para anular presupuesto
   const anularMutation = useMutation({
-    mutationFn: (data: { Loc_cod: number; pre_nro: number }) =>
+    mutationFn: (data: { Loc_cod: number; pre_nro: PreNro }) =>
       presupuestosApi.anular(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
@@ -268,7 +269,7 @@ export default function PresupuestosPage() {
 
   const [modalAction, setModalAction] = useState<'aprobar' | 'desaprobar' | 'anular'>('aprobar');
 
-  const handleAction = (Loc_cod: number, pre_nro: number, action: 'aprobar' | 'desaprobar' | 'anular') => {
+  const handleAction = (Loc_cod: number, pre_nro: PreNro, action: 'aprobar' | 'desaprobar' | 'anular') => {
     setModalAction(action);
     setSelectedPresupuesto({ Loc_cod, pre_nro });
   };
@@ -407,7 +408,7 @@ export default function PresupuestosPage() {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <Link
-                      href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                      href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${encodeURIComponent(String(presupuesto.pre_nro))}`}
                       className="text-xs text-slate-500 font-mono hover:text-teal-400 transition-colors flex items-center gap-1"
                     >
                       #{presupuesto.pre_nro} <ChevronRight size={12} />
@@ -537,7 +538,7 @@ export default function PresupuestosPage() {
 
                 {/* Ver Detalle */}
                 <Link
-                  href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                  href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${encodeURIComponent(String(presupuesto.pre_nro))}`}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 bg-slate-700 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-600 rounded-lg font-medium transition-colors text-sm"
                 >
                   <ClipboardList className="w-4 h-4" />
@@ -642,7 +643,7 @@ export default function PresupuestosPage() {
                     >
                       <td className="px-3 py-3 text-white font-medium whitespace-nowrap">
                         <Link
-                          href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                          href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${encodeURIComponent(String(presupuesto.pre_nro))}`}
                           className="hover:text-teal-400 transition-colors"
                         >
                           {presupuesto.pre_nro}
@@ -720,7 +721,7 @@ export default function PresupuestosPage() {
                       </td>
                       <td className="px-3 py-3 text-center">
                         <Link
-                          href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${presupuesto.pre_nro}`}
+                          href={`/dashboard/presupuestos/${presupuesto.Loc_cod}/${encodeURIComponent(String(presupuesto.pre_nro))}`}
                           className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
                           title="Ver detalle"
                         >
@@ -900,7 +901,7 @@ export default function PresupuestosPage() {
                 <PDFViewer
                   pdfUrl={pdfModal.pdfUrl}
                   title={`Presupuesto ${pdfModal.numeroPresupuesto}`}
-                  numeroDocumento={pdfModal.numeroPresupuesto || 0}
+                  numeroDocumento={pdfModal.numeroPresupuesto ?? 0}
                   onDownload={(num) => handleDownloadPDF(num, pdfModal.locCod ?? 0)}
                 />
               ) : (
